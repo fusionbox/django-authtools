@@ -6,7 +6,6 @@ from django.contrib.auth.hashers import UNUSABLE_PASSWORD
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import get_current_site
 from django.core.urlresolvers import reverse_lazy
-from django.http import Http404
 from django.shortcuts import redirect
 from django.utils.http import base36_to_int, int_to_base36, is_safe_url
 from django.utils.translation import ugettext_lazy as _
@@ -195,8 +194,7 @@ class PasswordResetConfirmView(FormView):
     success_url = reverse_lazy('authuser.views.password_reset_complete')
 
     def dispatch(self, *args, **kwargs):
-        if self.kwargs.get('uidb36') is None or self.kwargs.get('token') is None:
-            raise Http404
+        assert self.kwargs.get('uidb36') is not None and self.kwargs.get('token') is not None
         return super(PasswordResetConfirmView, self).dispatch(*args, **kwargs)
 
     @cached_property
