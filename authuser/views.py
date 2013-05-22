@@ -7,7 +7,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import get_current_site
 from django.core.urlresolvers import reverse_lazy
 from django.http import Http404
-from django.shortcuts import redirect, resolve_url
+from django.shortcuts import redirect
 from django.utils.http import base36_to_int, int_to_base36, is_safe_url
 from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.cache import never_cache
@@ -42,7 +42,7 @@ class WithNextUrlMixin(object):
             redirect_to = self.request.REQUEST[self.redirect_field_name]
             if is_safe_url(redirect_to, host=self.request.get_host()):
                 return redirect_to
-        return resolve_url(super(LoginView, self).get_success_url())
+        return super(WithNextUrlMixin, self).get_success_url()
 
 
 class LoginView(WithCurrentSiteMixin, WithNextUrlMixin, FormView):
