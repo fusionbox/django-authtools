@@ -61,7 +61,49 @@ class WithNextUrlMixin(object):
         return self.get_next_url() or super(WithNextUrlMixin, self).get_redirect_url(**kwargs)
 
 
-class LoginView(WithCurrentSiteMixin, WithNextUrlMixin, FormView):
+def DecoratorMixin(decorator):
+    """
+    Convers a decorator written for a function view into a mixin for a
+    class-based view.
+
+    ::
+
+        LoginRequiredMixin = DecoratorMixin(login_required)
+
+        class MyView(LoginRequiredMixin):
+            pass
+
+        class SomeView(DecoratorMixin(some_decorator),
+                       DecoratorMixin(something_else)):
+            pass
+
+    """
+
+    class Mixin(object):
+        __doc__ = decorator.__doc__
+
+        @classmethod
+        def as_view(cls, *args, **kwargs):
+            view = super(Mixin, cls).as_view(*args, **kwargs)
+            return decorator(view)
+
+    Mixin.__name__ = str('DecoratorMixin(%s)' % decorator.__name__)
+    return Mixin
+
+
+NeverCacheMixin = DecoratorMixin(never_cache)
+CsrfProtectMixin = DecoratorMixin(csrf_protect)
+LoginRequiredMixin = DecoratorMixin(login_required)
+SensitivePostParametersMixin = DecoratorMixin(
+    sensitive_post_parameters('password', 'old_password', 'password1',
+                              'password2', 'new_password1', 'new_password2')
+)
+
+class AuthDecoratorsMixin(NeverCacheMixin, CsrfProtectMixin, SensitivePostParametersMixin):
+    pass
+
+
+class LoginView(AuthDecoratorsMixin, WithCurrentSiteMixin, WithNextUrlMixin, FormView):
     form_class = AuthenticationForm
     template_name = 'registration/login.html'
     disallow_authenticated = True
@@ -85,12 +127,10 @@ class LoginView(WithCurrentSiteMixin, WithNextUrlMixin, FormView):
         })
         return kwargs
 
-login = sensitive_post_parameters()(csrf_protect(
-    never_cache(LoginView.as_view()),
-))
+login = LoginView.as_view()
 
 
-class LogoutView(WithCurrentSiteMixin, TemplateView):
+class LogoutView(NeverCacheMixin, WithCurrentSiteMixin, TemplateView):
     template_name = 'registration/logged_out.html'
 
     def get(self, *args, **kwargs):
@@ -100,7 +140,7 @@ class LogoutView(WithCurrentSiteMixin, TemplateView):
 logout = LogoutView.as_view()
 
 
-class LogoutRedirectView(WithNextUrlMixin, RedirectView):
+class LogoutRedirectView(NeverCacheMixin, WithNextUrlMixin, RedirectView):
     permanent = False
 
     def get(self, *args, **kwargs):
@@ -112,7 +152,7 @@ logout_then_login = LogoutRedirectView.as_view(
 )
 
 
-class PasswordChangeView(FormView):
+class PasswordChangeView(LoginRequiredMixin, AuthDecoratorsMixin, FormView):
     template_name = 'registration/password_change_form.html'
     form_class = PasswordChangeForm
     success_url = reverse_lazy('password_change_done')
@@ -129,15 +169,13 @@ class PasswordChangeView(FormView):
         form.save()
         return super(PasswordChangeView, self).form_valid(form)
 
-password_change = sensitive_post_parameters()(csrf_protect(
-    login_required(PasswordChangeView.as_view()),
-))
+password_change = PasswordChangeView.as_view()
 
 
-class PasswordChangeDoneView(TemplateView):
+class PasswordChangeDoneView(LoginRequiredMixin, TemplateView):
     template_name = 'registration/password_change_done.html'
 
-password_change_done = login_required(PasswordChangeDoneView.as_view())
+password_change_done = PasswordChangeDoneView.as_view()
 
 
 # 4 views for password reset:
@@ -148,7 +186,7 @@ password_change_done = login_required(PasswordChangeDoneView.as_view())
 # - password_reset_complete shows a success message for the above
 
 
-class PasswordResetView(FormView):
+class PasswordResetView(CsrfProtectMixin, FormView):
     template_name = 'registration/password_reset_form.html'
     token_generator = default_token_generator
     success_url = reverse_lazy('password_reset_done')
@@ -169,7 +207,7 @@ class PasswordResetView(FormView):
         )
         return super(PasswordResetView, self).form_valid(form)
 
-password_reset = csrf_protect(PasswordResetView.as_view())
+password_reset = PasswordResetView.as_view()
 
 
 class PasswordResetDoneView(TemplateView):
@@ -178,7 +216,7 @@ class PasswordResetDoneView(TemplateView):
 password_reset_done = PasswordResetDoneView.as_view()
 
 
-class PasswordResetConfirmView(FormView):
+class PasswordResetConfirmView(AuthDecoratorsMixin, FormView):
     template_name = 'registration/password_reset_confirm.html'
     token_generator = default_token_generator
     form_class = SetPasswordForm
@@ -223,9 +261,7 @@ class PasswordResetConfirmView(FormView):
     def save_form(self, form):
         return form.save()
 
-password_reset_confirm = sensitive_post_parameters()(never_cache(
-    PasswordResetConfirmView.as_view(),
-))
+password_reset_confirm = PasswordResetConfirmView.as_view()
 
 
 class PasswordResetConfirmAndLoginView(PasswordResetConfirmView):
@@ -238,9 +274,7 @@ class PasswordResetConfirmAndLoginView(PasswordResetConfirmView):
         auth.login(self.request, user)
         return ret
 
-password_reset_confirm_and_login = sensitive_post_parameters()(never_cache(
-    PasswordResetConfirmAndLoginView.as_view(),
-))
+password_reset_confirm_and_login = PasswordResetConfirmAndLoginView.as_view()
 
 
 class PasswordResetCompleteView(TemplateView):
