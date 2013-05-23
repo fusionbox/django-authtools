@@ -1,21 +1,30 @@
+"""
+Mostly equivalent to the views from django.contrib.auth.views, but
+implemented as class-based views.
+"""
+from __future__ import unicode_literals
+
 from django.conf import settings
-from django.contrib.auth import logout as auth_logout, login as auth_login, get_user_model, REDIRECT_FIELD_NAME
+from django.contrib.auth import get_user_model, REDIRECT_FIELD_NAME
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import AuthenticationForm, SetPasswordForm, PasswordChangeForm
-from django.contrib.auth.hashers import UNUSABLE_PASSWORD
+from django.contrib.auth.forms import (AuthenticationForm, SetPasswordForm,
+                                       PasswordChangeForm, PasswordResetForm)
 from django.contrib.auth.tokens import default_token_generator
+from django.contrib import auth
 from django.contrib.sites.models import get_current_site
 from django.core.urlresolvers import reverse_lazy
-from django.shortcuts import redirect
-from django.utils.http import base36_to_int, int_to_base36, is_safe_url
-from django.utils.translation import ugettext_lazy as _
+from django.shortcuts import redirect, resolve_url
+from django.utils.functional import memoize, lazy
+from django.utils.http import base36_to_int, is_safe_url
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
-from django.views.generic import FormView, TemplateView
-from django.utils.functional import cached_property
+from django.views.generic import FormView, TemplateView, RedirectView
+
 
 User = get_user_model()
+
+resolve_url_lazy = lazy(resolve_url, str)
 
 
 class WithCurrentSiteMixin(object):
@@ -36,19 +45,27 @@ class WithNextUrlMixin(object):
     redirect_field_name = REDIRECT_FIELD_NAME
     success_url = None
 
-    def get_success_url(self):
+    def get_next_url(self):
         if self.redirect_field_name in self.request.REQUEST:
             redirect_to = self.request.REQUEST[self.redirect_field_name]
             if is_safe_url(redirect_to, host=self.request.get_host()):
                 return redirect_to
-        return super(WithNextUrlMixin, self).get_success_url()
+
+    # This mixin can be mixed with FormViews and RedirectViews. They
+    # each use a different method to get the URL to redirect to, so we
+    # need to provide both methods.
+    def get_success_url(self):
+        return self.get_next_url() or super(WithNextUrlMixin, self).get_success_url()
+
+    def get_redirect_url(self, **kwargs):
+        return self.get_next_url() or super(WithNextUrlMixin, self).get_redirect_url(**kwargs)
 
 
 class LoginView(WithCurrentSiteMixin, WithNextUrlMixin, FormView):
     form_class = AuthenticationForm
     template_name = 'registration/login.html'
     disallow_authenticated = True
-    success_url = settings.LOGIN_REDIRECT_URL
+    success_url = resolve_url_lazy(settings.LOGIN_REDIRECT_URL)
 
     def dispatch(self, *args, **kwargs):
         if self.disallow_authenticated and self.request.user.is_authenticated():
@@ -56,7 +73,7 @@ class LoginView(WithCurrentSiteMixin, WithNextUrlMixin, FormView):
         return super(LoginView, self).dispatch(*args, **kwargs)
 
     def form_valid(self, form):
-        auth_login(self.request, form.get_user())
+        auth.login(self.request, form.get_user())
         return super(LoginView, self).form_valid(form)
 
     def get_context_data(self, **kwargs):
@@ -73,38 +90,32 @@ login = sensitive_post_parameters()(csrf_protect(
 ))
 
 
-class LogoutView(WithCurrentSiteMixin, WithNextUrlMixin, TemplateView):
+class LogoutView(WithCurrentSiteMixin, TemplateView):
     template_name = 'registration/logged_out.html'
 
     def get(self, *args, **kwargs):
-        auth_logout(self.request)
-
-        redirect_to = self.get_success_url()
-        if redirect_to:
-            return redirect(redirect_to)
-
+        auth.logout(self.request)
         return super(LogoutView, self).get(*args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        kwargs = super(LogoutView, self).get_context_data(**kwargs)
-        kwargs['title'] = _('Logged out')
-        return kwargs
-
 
 logout = LogoutView.as_view()
 
 
-class LogoutThenLoginView(LogoutView):
-    success_url = settings.LOGIN_REDIRECT_URL
+class LogoutRedirectView(WithNextUrlMixin, RedirectView):
+    permanent = False
 
+    def get(self, *args, **kwargs):
+        auth.logout(self.request)
+        return super(LogoutRedirectView, self).get(*args, **kwargs)
 
-logout_then_login = LogoutThenLoginView.as_view()
+logout_then_login = LogoutRedirectView.as_view(
+    url=reverse_lazy('login')
+)
 
 
 class PasswordChangeView(FormView):
     template_name = 'registration/password_change_form.html'
     form_class = PasswordChangeForm
-    success_url = reverse_lazy('authuser.views.password_change_done')
+    success_url = reverse_lazy('password_change_done')
 
     def get_form_kwargs(self):
         kwargs = super(PasswordChangeView, self).get_form_kwargs()
@@ -140,43 +151,23 @@ password_change_done = login_required(PasswordChangeDoneView.as_view())
 class PasswordResetView(FormView):
     template_name = 'registration/password_reset_form.html'
     token_generator = default_token_generator
-    success_url = reverse_lazy('authuser.views.password_reset_done')
+    success_url = reverse_lazy('password_reset_done')
     domain_override = None
     subject_template_name = 'registration/password_reset_subject.txt'
     email_template_name = 'registration/password_reset_email.html'
     from_email = None
+    form_class = PasswordResetForm
 
     def form_valid(self, form):
-        users = User.objects.filter(email__iexact=form.cleaned_data['email'])
-        for user in users:
-            if user.password == UNUSABLE_PASSWORD:
-                continue
-            self.send_password_reset_email(user)
+        form.save(
+            domain_override=self.domain_override,
+            subject_template_name=self.subject_template_name,
+            email_template_name=self.email_template_name,
+            token_generator=self.token_generator,
+            from_email=self.from_email,
+            request=self.request,
+        )
         return super(PasswordResetView, self).form_valid(form)
-
-    def send_password_reset_email(self, user):
-        from django.core.mail import send_mail
-        from django.template import loader
-        if not self.domain_override:
-            current_site = get_current_site(self.request)
-            site_name = current_site.name
-            domain = current_site.domain
-        else:
-            site_name = domain = self.domain_override
-        c = {
-            'email': user.email,
-            'domain': domain,
-            'site_name': site_name,
-            'uid': int_to_base36(user.pk),
-            'user': user,
-            'token': self.token_generator.make_token(user),
-            'protocol': self.request.is_secure() and 'https' or 'http',
-        }
-        subject = loader.render_to_string(self.subject_template_name, c)
-        # Email subject *must not* contain newlines
-        subject = ''.join(subject.splitlines())
-        email = loader.render_to_string(self.email_template_name, c)
-        send_mail(subject, email, self.from_email, [user.email])
 
 password_reset = csrf_protect(PasswordResetView.as_view())
 
@@ -191,19 +182,19 @@ class PasswordResetConfirmView(FormView):
     template_name = 'registration/password_reset_confirm.html'
     token_generator = default_token_generator
     form_class = SetPasswordForm
-    success_url = reverse_lazy('authuser.views.password_reset_complete')
+    success_url = reverse_lazy('password_reset_complete')
 
     def dispatch(self, *args, **kwargs):
         assert self.kwargs.get('uidb36') is not None and self.kwargs.get('token') is not None
         return super(PasswordResetConfirmView, self).dispatch(*args, **kwargs)
 
-    @cached_property
     def get_user(self):
         try:
             uid_int = base36_to_int(self.kwargs.get('uidb36'))
             return User._default_manager.get(pk=uid_int)
         except (ValueError, OverflowError, User.DoesNotExist):
             return None
+    get_user = memoize(get_user, {},  0)
 
     def valid_link(self):
         user = self.get_user()
@@ -226,11 +217,29 @@ class PasswordResetConfirmView(FormView):
     def form_valid(self, form):
         if not self.valid_link():
             return self.form_invalid(form)
-        form.save()
-        return super(PasswordResetConfirmView, self).form_invalid(form)
+        self.save_form(form)
+        return super(PasswordResetConfirmView, self).form_valid(form)
+
+    def save_form(self, form):
+        return form.save()
 
 password_reset_confirm = sensitive_post_parameters()(never_cache(
     PasswordResetConfirmView.as_view(),
+))
+
+
+class PasswordResetConfirmAndLoginView(PasswordResetConfirmView):
+    success_url = resolve_url_lazy(settings.LOGIN_REDIRECT_URL)
+
+    def save_form(self, form):
+        ret = super(PasswordResetConfirmAndLoginView, self).save_form(form)
+        user = auth.authenticate(username=self.get_user().email,
+                                 password=form.cleaned_data['new_password1'])
+        auth.login(self.request, user)
+        return ret
+
+password_reset_confirm_and_login = sensitive_post_parameters()(never_cache(
+    PasswordResetConfirmAndLoginView.as_view(),
 ))
 
 
