@@ -87,10 +87,3 @@ class AdminUserChangeForm(UserChangeForm):
                 "Raw passwords are not stored, so there is no way to see this"
                 " user's password, but you can change the password using"
                 " <a href=\"password/\">this form</a>.")
-
-
-class PasswordResetForm(forms.Form):
-    """
-    A form used to initiate the password reset process.
-    """
-    email = forms.EmailField(label=_("Email"), max_length=255)
