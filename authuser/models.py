@@ -46,10 +46,10 @@ class AbstractEmailUser(AbstractBaseUser, PermissionsMixin):
         ordering = ['email']
 
     def get_full_name(self):
-        return self.name
+        return self.email
 
     def get_short_name(self):
-        return self.name
+        return self.email
 
 
 @python_2_unicode_compatible
@@ -67,6 +67,12 @@ class AbstractNamedUser(AbstractEmailUser):
             name=self.name,
             email=self.email,
         )
+
+    def get_full_name(self):
+        return self.name
+
+    def get_short_name(self):
+        return self.name
 
 
 class User(AbstractNamedUser):
