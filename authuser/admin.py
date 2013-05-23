@@ -57,6 +57,7 @@ class StrippedUserAdmin(DjangoUserAdmin):
     search_fields = (USERNAME_FIELD,)
     ordering = None
     filter_horizontal = tuple()
+    readonly_fields = ('last_login', 'date_joined')
 
 
 class StrippedNamedUserAdmin(StrippedUserAdmin):
