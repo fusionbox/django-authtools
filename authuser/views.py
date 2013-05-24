@@ -279,7 +279,7 @@ password_reset_confirm_and_login = PasswordResetConfirmAndLoginView.as_view()
 
 class PasswordResetCompleteView(TemplateView):
     template_name = 'registration/password_reset_complete.html'
-    login_url = settings.LOGIN_URL
+    login_url = resolve_url_lazy(settings.LOGIN_URL)
 
     def get_login_url(self):
         return self.login_url
