@@ -81,3 +81,97 @@ Authuser provides the following Form classes:
     :class:`authuser.forms.UserChangeForm`
       A normal ModelForm that adds a ``ReadOnlyPasswordHashField`` with the
       ``BetterReadOnlyPasswordHashWidget``.
+
+.. currentmodule:: authuser.views
+
+Views
+=====
+
+Authuser provides the following class-based views, intended to be *mostly*
+drop-in replacements for their :class:`django.contrib.auth.views` counterparts.
+
+.. class:: authuser.views.LoginView
+    **view function:** :func:`authuser.views.login`
+    **replaces:** :func:`django.contrib.auth.views.login`.
+
+    .. note::
+
+    - New property ``disallow_authenticated`` which defaults to ``True``.  When
+      true, authenticated users will be automatically redirected to the
+      ``success_url`` when visiting this view.
+
+.. class:: authuser.views.LogoutView
+    **view function:** :func:`authuser.views.logout`
+    **replaces:** :func:`django.contrib.auth.views.logout`.
+
+    .. note::
+
+    - The ``next_page`` parameter has been removed. Use
+      :class:`authuser.views.LogoutRedirectView` to redirect after logging out.
+
+
+.. class:: authuser.views.LogoutRedirectView
+    **view function:** :func:`authuser.views.logout_then_login`
+    **replaces:** :func:`django.contrib.auth.views.logout_then_login`.
+
+    .. note::
+
+    - The ``login_url`` parameter has been replaced with ``url`` to
+      comply with the class-based views API.
+
+.. class:: authuser.views.PasswordChange`
+    **view function:** :func:`authuser.views.password_change`
+    **replaces:** :func:`django.contrib.auth.views.password_change`.
+
+    .. note::
+
+    - The ``post_change_redirect`` parameter has been replaced with
+      ``success_url`` to comply with the class-based views API.
+
+.. class:: authuser.views.PasswordChangeDone
+    **view function:** :func:`authuser.views.password_change_done`
+    **replaces:** :func:`django.contrib.auth.views.password_change_done`.
+
+.. class:: authuser.views.PasswordResetView
+    **view function:** :func:`authuser.views.password_reset`
+    **replaces:** :func:`django.contrib.auth.views.password_reset`.
+
+    .. note::
+
+    - The ``next_page` parameter has been replaced with ``success_url`` to
+      comply with the class-based views API.
+    - The ``password_reset_form`` parameter has been replaced with
+      ``form_class`` to comply with the class-based views API.
+    - The password reset email is no longer sent from
+      ``PasswordResetForm.save()``.  The method
+      :class:`PasswordResetView.send_password_reset_email` is passed the
+      ``user`` as the sole argument and is responsible for sending the reset
+      email.  This method simply duplicates the logic found on
+      :class:`django.contrib.auth.forms.PasswordResetForm` and can be overidden
+      via subclassing the view class.
+
+
+.. class:: authuser.views.PasswordResetDoneView
+    **view function:** :func:`authuser.views.password_reset_done`
+    **replaces:** :class:`django.contrib.auth.views.password_reset_done`.
+
+.. class:: authuser.views.PasswordResetConfirmView
+    **view function:** :func:`authuser.views.password_reset_confirm`
+    **replaces:** :func:`django.contrib.auth.views.password_reset_confirm`.
+
+    .. note::
+
+    - The ``set_password_form`` parameter has been replaced with ``form_class``
+      to comply with the class-based views API.
+    - The ``post_reset_redirect`` parameter has been replaced with
+      ``success_url`` to comply with the class-based views API.
+
+.. class:: authuser.views.PasswordResetConfirmAndLoginView
+    **view function:** :func:`authuser.views.password_reset_confirm_and_login`
+
+    Like :class:`PasswordResetConfirmView`, but also logs the user in after setting
+    their password.
+
+.. class:: authuser.views.PasswordResetCompleteView
+    **view function:** :func:`authuser.views.password_reset_complete`
+    **replaces:** :func:`django.contrib.auth.views.password_reset_complete`.

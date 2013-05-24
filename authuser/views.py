@@ -1,0 +1,292 @@
+"""
+Mostly equivalent to the views from django.contrib.auth.views, but
+implemented as class-based views.
+"""
+from __future__ import unicode_literals
+
+from django.conf import settings
+from django.contrib.auth import get_user_model, REDIRECT_FIELD_NAME
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import (AuthenticationForm, SetPasswordForm,
+                                       PasswordChangeForm, PasswordResetForm)
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib import auth
+from django.contrib.sites.models import get_current_site
+from django.core.urlresolvers import reverse_lazy
+from django.shortcuts import redirect, resolve_url
+from django.utils.functional import memoize, lazy
+from django.utils.http import base36_to_int, is_safe_url
+from django.views.decorators.cache import never_cache
+from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.debug import sensitive_post_parameters
+from django.views.generic import FormView, TemplateView, RedirectView
+
+
+User = get_user_model()
+
+resolve_url_lazy = lazy(resolve_url, str)
+
+
+class WithCurrentSiteMixin(object):
+    def get_current_site(self):
+        return get_current_site(self.request)
+
+    def get_context_data(self, **kwargs):
+        kwargs = super(WithCurrentSiteMixin, self).get_context_data(**kwargs)
+        current_site = self.get_current_site()
+        kwargs.update({
+            'site': current_site,
+            'site_name': current_site.name,
+        })
+        return kwargs
+
+
+class WithNextUrlMixin(object):
+    redirect_field_name = REDIRECT_FIELD_NAME
+    success_url = None
+
+    def get_next_url(self):
+        if self.redirect_field_name in self.request.REQUEST:
+            redirect_to = self.request.REQUEST[self.redirect_field_name]
+            if is_safe_url(redirect_to, host=self.request.get_host()):
+                return redirect_to
+
+    # This mixin can be mixed with FormViews and RedirectViews. They
+    # each use a different method to get the URL to redirect to, so we
+    # need to provide both methods.
+    def get_success_url(self):
+        return self.get_next_url() or super(WithNextUrlMixin, self).get_success_url()
+
+    def get_redirect_url(self, **kwargs):
+        return self.get_next_url() or super(WithNextUrlMixin, self).get_redirect_url(**kwargs)
+
+
+def DecoratorMixin(decorator):
+    """
+    Convers a decorator written for a function view into a mixin for a
+    class-based view.
+
+    ::
+
+        LoginRequiredMixin = DecoratorMixin(login_required)
+
+        class MyView(LoginRequiredMixin):
+            pass
+
+        class SomeView(DecoratorMixin(some_decorator),
+                       DecoratorMixin(something_else)):
+            pass
+
+    """
+
+    class Mixin(object):
+        __doc__ = decorator.__doc__
+
+        @classmethod
+        def as_view(cls, *args, **kwargs):
+            view = super(Mixin, cls).as_view(*args, **kwargs)
+            return decorator(view)
+
+    Mixin.__name__ = str('DecoratorMixin(%s)' % decorator.__name__)
+    return Mixin
+
+
+NeverCacheMixin = DecoratorMixin(never_cache)
+CsrfProtectMixin = DecoratorMixin(csrf_protect)
+LoginRequiredMixin = DecoratorMixin(login_required)
+SensitivePostParametersMixin = DecoratorMixin(
+    sensitive_post_parameters('password', 'old_password', 'password1',
+                              'password2', 'new_password1', 'new_password2')
+)
+
+class AuthDecoratorsMixin(NeverCacheMixin, CsrfProtectMixin, SensitivePostParametersMixin):
+    pass
+
+
+class LoginView(AuthDecoratorsMixin, WithCurrentSiteMixin, WithNextUrlMixin, FormView):
+    form_class = AuthenticationForm
+    template_name = 'registration/login.html'
+    disallow_authenticated = True
+    success_url = resolve_url_lazy(settings.LOGIN_REDIRECT_URL)
+
+    def dispatch(self, *args, **kwargs):
+        if self.disallow_authenticated and self.request.user.is_authenticated():
+            return redirect(self.get_success_url())
+        return super(LoginView, self).dispatch(*args, **kwargs)
+
+    def form_valid(self, form):
+        auth.login(self.request, form.get_user())
+        return super(LoginView, self).form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        kwargs = super(LoginView, self).get_context_data(**kwargs)
+        kwargs.update({
+            self.redirect_field_name: self.request.REQUEST.get(
+                self.redirect_field_name, '',
+            ),
+        })
+        return kwargs
+
+login = LoginView.as_view()
+
+
+class LogoutView(NeverCacheMixin, WithCurrentSiteMixin, TemplateView):
+    template_name = 'registration/logged_out.html'
+
+    def get(self, *args, **kwargs):
+        auth.logout(self.request)
+        return super(LogoutView, self).get(*args, **kwargs)
+
+logout = LogoutView.as_view()
+
+
+class LogoutRedirectView(NeverCacheMixin, WithNextUrlMixin, RedirectView):
+    permanent = False
+
+    def get(self, *args, **kwargs):
+        auth.logout(self.request)
+        return super(LogoutRedirectView, self).get(*args, **kwargs)
+
+logout_then_login = LogoutRedirectView.as_view(
+    url=reverse_lazy('login')
+)
+
+
+class PasswordChangeView(LoginRequiredMixin, AuthDecoratorsMixin, FormView):
+    template_name = 'registration/password_change_form.html'
+    form_class = PasswordChangeForm
+    success_url = reverse_lazy('password_change_done')
+
+    def get_form_kwargs(self):
+        kwargs = super(PasswordChangeView, self).get_form_kwargs()
+        kwargs['user'] = self.get_user()
+        return kwargs
+
+    def get_user(self):
+        return self.request.user
+
+    def form_valid(self, form):
+        form.save()
+        return super(PasswordChangeView, self).form_valid(form)
+
+password_change = PasswordChangeView.as_view()
+
+
+class PasswordChangeDoneView(LoginRequiredMixin, TemplateView):
+    template_name = 'registration/password_change_done.html'
+
+password_change_done = PasswordChangeDoneView.as_view()
+
+
+# 4 views for password reset:
+# - password_reset sends the mail
+# - password_reset_done shows a success message for the above
+# - password_reset_confirm checks the link the user clicked and
+#   prompts for a new password
+# - password_reset_complete shows a success message for the above
+
+
+class PasswordResetView(CsrfProtectMixin, FormView):
+    template_name = 'registration/password_reset_form.html'
+    token_generator = default_token_generator
+    success_url = reverse_lazy('password_reset_done')
+    domain_override = None
+    subject_template_name = 'registration/password_reset_subject.txt'
+    email_template_name = 'registration/password_reset_email.html'
+    from_email = None
+    form_class = PasswordResetForm
+
+    def form_valid(self, form):
+        form.save(
+            domain_override=self.domain_override,
+            subject_template_name=self.subject_template_name,
+            email_template_name=self.email_template_name,
+            token_generator=self.token_generator,
+            from_email=self.from_email,
+            request=self.request,
+        )
+        return super(PasswordResetView, self).form_valid(form)
+
+password_reset = PasswordResetView.as_view()
+
+
+class PasswordResetDoneView(TemplateView):
+    template_name = 'registration/password_reset_done.html'
+
+password_reset_done = PasswordResetDoneView.as_view()
+
+
+class PasswordResetConfirmView(AuthDecoratorsMixin, FormView):
+    template_name = 'registration/password_reset_confirm.html'
+    token_generator = default_token_generator
+    form_class = SetPasswordForm
+    success_url = reverse_lazy('password_reset_complete')
+
+    def dispatch(self, *args, **kwargs):
+        assert self.kwargs.get('uidb36') is not None and self.kwargs.get('token') is not None
+        return super(PasswordResetConfirmView, self).dispatch(*args, **kwargs)
+
+    def get_user(self):
+        try:
+            uid_int = base36_to_int(self.kwargs.get('uidb36'))
+            return User._default_manager.get(pk=uid_int)
+        except (ValueError, OverflowError, User.DoesNotExist):
+            return None
+    get_user = memoize(get_user, {},  0)
+
+    def valid_link(self):
+        user = self.get_user()
+        return user is not None and self.token_generator.check_token(user, self.kwargs.get('token'))
+
+    def get_form_kwargs(self):
+        kwargs = super(PasswordResetConfirmView, self).get_form_kwargs()
+        kwargs['user'] = self.get_user()
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        kwargs = super(PasswordResetConfirmView, self).get_context_data(**kwargs)
+        if self.valid_link():
+            kwargs['validlink'] = True
+        else:
+            kwargs['validlink'] = False
+            kwargs['form'] = None
+        return kwargs
+
+    def form_valid(self, form):
+        if not self.valid_link():
+            return self.form_invalid(form)
+        self.save_form(form)
+        return super(PasswordResetConfirmView, self).form_valid(form)
+
+    def save_form(self, form):
+        return form.save()
+
+password_reset_confirm = PasswordResetConfirmView.as_view()
+
+
+class PasswordResetConfirmAndLoginView(PasswordResetConfirmView):
+    success_url = resolve_url_lazy(settings.LOGIN_REDIRECT_URL)
+
+    def save_form(self, form):
+        ret = super(PasswordResetConfirmAndLoginView, self).save_form(form)
+        user = auth.authenticate(username=self.get_user().email,
+                                 password=form.cleaned_data['new_password1'])
+        auth.login(self.request, user)
+        return ret
+
+password_reset_confirm_and_login = PasswordResetConfirmAndLoginView.as_view()
+
+
+class PasswordResetCompleteView(TemplateView):
+    template_name = 'registration/password_reset_complete.html'
+    login_url = resolve_url_lazy(settings.LOGIN_URL)
+
+    def get_login_url(self):
+        return self.login_url
+
+    def get_context_data(self, **kwargs):
+        kwargs = super(PasswordResetCompleteView, self).get_context_data(**kwargs)
+        kwargs['login_url'] = self.get_login_url()
+        return kwargs
+
+password_reset_complete = PasswordResetCompleteView.as_view()
