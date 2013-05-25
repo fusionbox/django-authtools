@@ -81,4 +81,4 @@ class NamedUserAdmin(UserAdmin, StrippedNamedUserAdmin):
 
 # If they are using authuser.User, register the admin.
 if get_user_model() == User:
-    admin.register(User, NamedUserAdmin)
+    admin.site.register(User, NamedUserAdmin)

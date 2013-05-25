@@ -31,6 +31,7 @@ class UserCreationForm(forms.ModelForm):
 
     error_messages = {
         'password_mismatch': _("The two password fields didn't match."),
+        'duplicate_username': _("A user with that %(username)s already exists."),
     }
 
     password1 = forms.CharField(label=_("Password"), widget=forms.PasswordInput)
@@ -42,6 +43,18 @@ class UserCreationForm(forms.ModelForm):
     class Meta:
         model = User
         fields = (User.USERNAME_FIELD,) + tuple(User.REQUIRED_FIELDS)
+
+    def clean_username(self):
+        # Since User.username is unique, this check is redundant,
+        # but it sets a nicer error message than the ORM. See #13147.
+        username = self.cleaned_data["username"]
+        try:
+            User._default_manager.get(username=username)
+        except User.DoesNotExist:
+            return username
+        raise forms.ValidationError(self.error_messages['duplicate_username'] % {
+            'username': User.USERNAME_FIELD,
+        })
 
     def clean_password2(self):
         # Check that the two password entries match

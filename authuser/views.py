@@ -232,7 +232,7 @@ class PasswordResetConfirmView(AuthDecoratorsMixin, FormView):
             return User._default_manager.get(pk=uid_int)
         except (ValueError, OverflowError, User.DoesNotExist):
             return None
-    get_user = memoize(get_user, {},  0)
+    get_user = memoize(get_user, {},  1)
 
     def valid_link(self):
         user = self.get_user()

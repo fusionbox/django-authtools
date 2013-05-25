@@ -1,3 +1,6 @@
 *.pyc
 *.egg-info/
 docs/build/
+tests/sqlite_database
+tests/.coverage
+tests/htmlcov/

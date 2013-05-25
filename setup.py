@@ -27,7 +27,7 @@ def get_version():
     elif stage == 'alpha':
         process = subprocess.Popen('git rev-parse HEAD'.split(), stdout=subprocess.PIPE)
         stdout, stderr = process.communicate()
-        return number + '-' + stdout.strip()[:8]
+        return number + '-' + stdout.decode('utf-8').strip()[:8]
 
 setup(
     name='authuser',
