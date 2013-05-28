@@ -239,11 +239,6 @@ class LogoutTest(LogoutTest):
                             "%s should be allowed" % good_url)
             self.confirm_logged_out()
 
-    # our login view doesn't accept a next param, for now
-    @unittest.expectedFailure
-    def test_logout_with_redirect_argument(self):
-        return super(LogoutTest, self).test_logout_with_redirect_argument()
-
 
 @skipIfCustomUser
 class UserCreationFormTest(TestCase):

@@ -130,24 +130,20 @@ class LoginView(AuthDecoratorsMixin, WithCurrentSiteMixin, WithNextUrlMixin, For
 login = LoginView.as_view()
 
 
-class LogoutView(NeverCacheMixin, WithCurrentSiteMixin, TemplateView):
+class LogoutView(NeverCacheMixin, WithCurrentSiteMixin, WithNextUrlMixin, TemplateView, RedirectView):
     template_name = 'registration/logged_out.html'
-
-    def get(self, *args, **kwargs):
-        auth.logout(self.request)
-        return super(LogoutView, self).get(*args, **kwargs)
-
-logout = LogoutView.as_view()
-
-
-class LogoutRedirectView(NeverCacheMixin, WithNextUrlMixin, RedirectView):
     permanent = False
 
     def get(self, *args, **kwargs):
         auth.logout(self.request)
-        return super(LogoutRedirectView, self).get(*args, **kwargs)
+        # If we have a url to redirect to, do it. Otherwise render the logged-out template.
+        if self.get_redirect_url(**kwargs):
+            return RedirectView.get(self, *args, **kwargs)
+        else:
+            return TemplateView.get(self, *args, **kwargs)
 
-logout_then_login = LogoutRedirectView.as_view(
+logout = LogoutView.as_view()
+logout_then_login = LogoutView.as_view(
     url=reverse_lazy('login')
 )
 
