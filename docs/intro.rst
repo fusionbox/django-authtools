@@ -40,7 +40,8 @@ This will set you up with a custom user that
 -  has one ``name`` field instead of ``first_name``, ``last_name`` (see `Falsehoods Programmers Believe About Names <http://www.kalzumeus.com/2010/06/17/falsehoods-programmers-believe-about-names/>`_)
 
 It also gives you a registered admin class that has a less intimidating
-ReadOnlyPasswordHashWidget and the standard auth views (see Views).
+:class:`ReadOnlyPasswordHashWidget <authuser.forms.BetterReadOnlyPasswordHashWidget>`
+and the standard auth views (see :doc:`views`).
 
 
 But it's supposed to be a *custom* User model!
@@ -67,14 +68,18 @@ Also, please read this quote from the `Django documentation
     database join, which may have an effect on performance.
 
 However, there are many valid reasons for wanting a User model that you can
-change things on.  Django-authuser allows you to that too.  Django-authuser
+change things on.  django-authuser allows you to that too.  django-authuser
 provides a couple of abstract classes for subclassing.
 
-    :class:`authuser.models.AbstractEmailUser`
-      A no-frills email as username model.
+.. class:: authuser.models.AbstractEmailUser
 
-    :class:`authuser.models.AbstractNamedUser`
-      Adds a name field.
+    A no-frills email as username model that satisifes the User contract and
+    the permissions API needed for the Admin site.
+
+.. class:: authuser.models.AbstractNamedUser
+
+    A subclass of :class:`~authuser.models.AbstractEmailUser` that adds a name
+    field.
 
 If want to make your custom User model, you can use one of these base classes.
 

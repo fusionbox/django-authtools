@@ -7,6 +7,10 @@ django-authuser provides the following class-based views, intended to be
 *mostly* drop-in replacements for their :ref:`built-in
 <django:built-in-auth-views>` counterparts.
 
+In addition to the built-in views, there is a new
+:class:`PasswordResetConfirmAndLoginView` that logs in the user and redirects
+them after they reset their password.
+
 .. note::
 
     The view functions in Django were wrapped in decorators.  The classed-based
@@ -26,17 +30,10 @@ django-authuser provides the following class-based views, intended to be
 
 .. class:: LogoutView
 
-    The view function :func:`authuser.views.logout` replaces
-    :func:`django:django.contrib.auth.views.logout`.
-
-    The ``next_page`` parameter present in the built-in function has been
-    removed. Use :class:`LogoutRedirectView` to redirect after logging out.
-
-
-.. class:: LogoutRedirectView
-
-    The view function :func:`authuser.views.logout_then_login` replaces
-    :func:`django:django.contrib.auth.views.logout_then_login`.
+    The view functions :func:`authuser.views.logout` and
+    :func:`authuser.views.logout_then_login` replace
+    :func:`django:django.contrib.auth.views.logout`
+    :func:`django:django.contrib.auth.views.logout_then_login` respectively.
 
     .. attribute:: url
 
@@ -45,6 +42,11 @@ django-authuser provides the following class-based views, intended to be
 
         For the :func:`logout_then_login` this is default to
         :django:setting:`LOGIN_REDIRECT_URL`.
+
+    .. attribute:: template_name
+
+        If :attr:`url` is ``None`` and there is no ``next`` parameter,
+        :class:`LoginView` will act like a TemplateView and display a template.
 
 .. class:: PasswordChangeView
 
@@ -105,12 +107,20 @@ django-authuser provides the following class-based views, intended to be
 
 .. class:: PasswordResetConfirmAndLoginView
 
-    Available in the view function
+    Available as the view function
     :func:`authuser.views.password_reset_confirm_and_login`.
     
     This is like :class:`PasswordResetConfirmView`, but also logs the user in
     after resetting their password.  By default, it will redirect the user to
     the :django:setting:`LOGIN_REDIRECT_URL`.
+
+    If you wanted to use this view, you could have a urls config that looks like::
+
+        urlpatterns = patterns('',
+            url('^reset/(?P<uidb36>[0-9A-Za-z]{1,13})-(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
+                'authuser.views.password_reset_confirm_and_login', name='password_reset_confirm'),
+            url('^', include('authuser.urls')),
+        )
 
 .. class:: PasswordResetCompleteView
 

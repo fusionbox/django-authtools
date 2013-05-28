@@ -5,8 +5,9 @@ Admin
 
 django-authuser provides a couple of Admin classes. The default one is
 :class:`NamedUserAdmin`, which provides an admin similar to
-django.contrib.auth. If you are not using the :class:`AbstractNamedUser`, you
-might want the :class:`UserAdmin` instead.
+django.contrib.auth. If you are not using the
+:class:`~authuser.models.AbstractNamedUser`, you might want the
+:class:`UserAdmin` instead.
 
 If you are using your own user model, authuser won't register an Admin class to
 avoid problems. If you define ``REQUIRED_FIELDS`` on your custom model, authuser

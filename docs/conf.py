@@ -13,8 +13,8 @@
 
 import sys, os
 
-sys.path.append(os.path.abspath('../_themes'))
-sys.path.append(os.path.abspath('../_ext'))
+sys.path.append(os.path.abspath('_themes'))
+sys.path.append(os.path.abspath('_ext'))
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -32,7 +32,7 @@ extensions = ['sphinx.ext.todo', 'sphinx.ext.coverage', 'sphinx.ext.viewcode',
               'sphinx.ext.intersphinx', 'djangodocs']
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['ytemplates']
+templates_path = ['_templates']
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -68,7 +68,7 @@ release = '0.1.0'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = []
+exclude_patterns = ['_build']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -106,7 +106,7 @@ html_theme = 'kr'
 #html_theme_options = {}
 
 # Add any paths that contain custom themes here, relative to this directory.
-html_theme_path = ['../_themes']
+html_theme_path = ['_themes']
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -127,7 +127,7 @@ html_theme_path = ['../_themes']
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['ystatic']
+html_static_path = ['_static']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.

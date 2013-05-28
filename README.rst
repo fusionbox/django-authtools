@@ -1,6 +1,11 @@
 django-authuser
 ---------------
 
+.. image:: https://travis-ci.org/fusionbox/django-authuser.png
+   :target: http://travis-ci.org/fusionbox/django-authuser
+   :alt: Build Status
+
+
 A custom user model app for Django 1.5+ that features email as username and
 other things. It tries to stay true to the built-in user model for the most
 part.
