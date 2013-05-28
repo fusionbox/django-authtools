@@ -3,9 +3,8 @@ from setuptools import setup, find_packages
 import subprocess
 import os
 
-__doc__ = """
-Custom user model app for Django featuring email as username.
-"""
+__doc__ = ("Custom user model app for Django featuring email as username and"
+           " class-based views for authentication.")
 
 
 def read(fname):
@@ -16,7 +15,7 @@ install_requires = [
     'Django>=1.5',
 ]
 
-version = (0, 0, 1, 'alpha')
+version = (0, 1, 0, 'alpha')
 
 
 def get_version():
@@ -30,12 +29,29 @@ def get_version():
         return number + '-' + stdout.decode('utf-8').strip()[:8]
 
 setup(
-    name='authuser',
+    name='django-authuser',
     version=get_version(),
+    author='Fusionbox, Inc.',
+    author_email='programmers@fusionbox.com',
     description=__doc__,
     long_description=read('README.rst'),
+    url='https://django-authuser.readthedocs.org/',
+    license='BSD',
     packages=[package for package in find_packages() if package.startswith('authuser')],
     install_requires=install_requires,
     zip_safe=False,
     include_package_data=True,
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'Environment :: Web Environment',
+        'Framework :: Django',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: BSD License',
+        'Natural Language :: English',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.2',
+        'Programming Language :: Python :: 3.3',
+    ],
 )
