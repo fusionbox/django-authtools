@@ -6,7 +6,7 @@ We're able to borrow most of django's auth view tests.
 from django.core.urlresolvers import reverse
 from django.contrib.sites.models import Site, RequestSite
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import REDIRECT_FIELD_NAME
+from django.contrib.auth import REDIRECT_FIELD_NAME, get_user_model
 from django.utils.http import urlquote
 from django.utils import unittest
 from django.test import TestCase
@@ -37,13 +37,15 @@ except ImportError:
 
 from authuser.forms import UserCreationForm
 
+User = get_user_model()
+
 
 class AuthViewNamedURLTests(AuthViewNamedURLTests):
     urls = 'authuser.urls'
 
 
 class PasswordResetTest(PasswordResetTest):
-    urls = 'authuser.urls'
+    urls = 'tests.urls'
 
     # these use custom, test-specific urlpatterns that we don't have
     test_admin_reset = None
@@ -53,13 +55,52 @@ class PasswordResetTest(PasswordResetTest):
     test_confirm_redirect_custom = None
     test_confirm_redirect_custom_named = None
 
-
     def test_user_only_fetched_once(self):
         url, confirm_path = self._test_confirm_start()
         with self.assertNumQueries(1):
             # the confirm view is only allowed to fetch the user object a
             # single time
             self.client.get(confirm_path)
+
+    def test_confirm_invalid_path(self):
+        # django has a similar test, but it tries to test an invalid path AND
+        # an invalid form at the same time. We need a test case with an invalid
+        # path, but valid form.
+        url, path = self._test_confirm_start()
+        path = path[:-5] + ("0" * 4) + path[-1]
+
+        self.client.post(path, {
+            'new_password1': 'anewpassword',
+            'new_password2': 'anewpassword',
+        })
+        # Check the password has not been changed
+        u = User.objects.get(email='staffmember@example.com')
+        self.assertTrue(not u.check_password("anewpassword"))
+
+    def test_confirm_done(self):
+        """
+        Password reset complete page should be rendered with 'login_url'
+        in its context.
+        """
+        url, path = self._test_confirm_start()
+        response = self.client.post(path, {'new_password1': 'anewpassword',
+                                           'new_password2': 'anewpassword'})
+        self.assertEqual(response.status_code, 302)
+
+        response = self.client.get(response['Location'])
+
+        self.assertIn('login_url', response.context)
+
+    def test_confirm_and_login(self):
+        url, path = self._test_confirm_start()
+        path = path.replace('reset', 'reset_and_login')
+        response = self.client.post(path, {'new_password1': 'anewpassword',
+                                           'new_password2': 'anewpassword'})
+        self.assertEqual(response.status_code, 302)
+
+        # verify that we're actually logged in
+        response = self.client.get('/login_required/')
+        self.assertEqual(response.status_code, 200)
 
 
 class ChangePasswordTest(ChangePasswordTest):
