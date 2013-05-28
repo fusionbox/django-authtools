@@ -1,9 +1,11 @@
 from __future__ import unicode_literals
 
-from django import forms
+from django import forms, VERSION as DJANGO_VERSION
 from django.contrib.auth.forms import ReadOnlyPasswordHashField, ReadOnlyPasswordHashWidget
 from django.contrib.auth import get_user_model
-from django.utils.translation import ugettext_lazy as _
+from django.contrib.auth.hashers import UNUSABLE_PASSWORD, identify_hasher
+from django.utils.translation import ugettext_lazy as _, ugettext
+from django.utils.html import format_html
 
 
 User = get_user_model()
@@ -14,13 +16,22 @@ class BetterReadOnlyPasswordHashWidget(ReadOnlyPasswordHashWidget):
     A ReadOnlyPasswordHashWidget that has a less intimidating output.
     """
     def render(self, name, value, attrs):
-        from django.utils.safestring import mark_safe
         from django.forms.util import flatatt
         final_attrs = flatatt(self.build_attrs(attrs))
-        hidden = '<div{attrs}><strong>*************</strong></div>'.format(
-            attrs=final_attrs
-        )
-        return mark_safe(hidden)
+
+        if not value or value == UNUSABLE_PASSWORD:
+            summary = ugettext("No password set.")
+        else:
+            try:
+                identify_hasher(value)
+            except ValueError:
+                summary = ugettext("Invalid password format or unknown"
+                                   " hashing algorithm.")
+            else:
+                summary = ugettext('*************')
+
+        return format_html('<div{attrs}><strong>{summary}</strong></div>',
+                           attrs=final_attrs, summary=summary)
 
 
 class UserCreationForm(forms.ModelForm):
@@ -44,17 +55,21 @@ class UserCreationForm(forms.ModelForm):
         model = User
         fields = (User.USERNAME_FIELD,) + tuple(User.REQUIRED_FIELDS)
 
-    def clean_username(self):
-        # Since User.username is unique, this check is redundant,
-        # but it sets a nicer error message than the ORM. See #13147.
-        username = self.cleaned_data["username"]
-        try:
-            User._default_manager.get(username=username)
-        except User.DoesNotExist:
-            return username
-        raise forms.ValidationError(self.error_messages['duplicate_username'] % {
-            'username': User.USERNAME_FIELD,
-        })
+    def __init__(self, *args, **kwargs):
+        super(UserCreationForm, self).__init__(*args, **kwargs)
+
+        def validate_uniqueness_of_username_field(value):
+            # Since User.username is unique, this check is redundant,
+            # but it sets a nicer error message than the ORM. See #13147.
+            try:
+                User._default_manager.get_by_natural_key(value)
+            except User.DoesNotExist:
+                return value
+            raise forms.ValidationError(self.error_messages['duplicate_username'] % {
+                'username': User.USERNAME_FIELD,
+            })
+
+        self.fields[User.USERNAME_FIELD].validators.append(validate_uniqueness_of_username_field)
 
     def clean_password2(self):
         # Check that the two password entries match
@@ -84,6 +99,8 @@ class UserChangeForm(forms.ModelForm):
 
     class Meta:
         model = User
+        if DJANGO_VERSION >= (1, 6):
+            fields = '__all__'
 
     def clean_password(self):
         # Regardless of what the user provides, return the initial value.

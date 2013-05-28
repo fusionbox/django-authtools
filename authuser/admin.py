@@ -79,6 +79,5 @@ class NamedUserAdmin(UserAdmin, StrippedNamedUserAdmin):
     pass
 
 
-# If they are using authuser.User, register the admin.
-if get_user_model() == User:
-    admin.site.register(User, NamedUserAdmin)
+# If the model has been swapped, this is basically a noop.
+admin.site.register(User, NamedUserAdmin)
