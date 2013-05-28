@@ -38,8 +38,8 @@ except ImportError:
         LogoutTest,
     )
 
-from authuser.admin import BASE_FIELDS
-from authuser.forms import UserCreationForm, UserChangeForm
+from authtools.admin import BASE_FIELDS
+from authtools.forms import UserCreationForm, UserChangeForm
 
 User = get_user_model()
 
@@ -49,7 +49,7 @@ def skipIfNotCustomUser(test_func):
 
 
 class AuthViewNamedURLTests(AuthViewNamedURLTests):
-    urls = 'authuser.urls'
+    urls = 'authtools.urls'
 
 
 class PasswordResetTest(PasswordResetTest):
@@ -112,7 +112,7 @@ class PasswordResetTest(PasswordResetTest):
 
 
 class ChangePasswordTest(ChangePasswordTest):
-    urls = 'authuser.urls'
+    urls = 'authtools.urls'
 
     test_password_change_redirect_custom = None
     test_password_change_redirect_custom_named = None
@@ -132,7 +132,7 @@ class ChangePasswordTest(ChangePasswordTest):
 
 
 class LoginTest(LoginTest):
-    urls = 'authuser.urls'
+    urls = 'authtools.urls'
 
     # the built-in tests depend on the django urlpatterns (they reverse
     # django.contrib.auth.views.login)
@@ -252,7 +252,7 @@ class UserCreationFormTest(TestCase):
     def setUp(self):
         # in built-in UserManager, the order of arguments is:
         #     username, email, password
-        # in authuser UserManager, the order of arguments is:
+        # in authtools UserManager, the order of arguments is:
         #     USERNAME_FIELD, password
         User.objects.create_user('testclient@example.com', password='test123')
         self.username = User.USERNAME_FIELD
@@ -306,7 +306,7 @@ class UserCreationFormTest(TestCase):
             'password2': 'test123',
         }
 
-        if settings.AUTH_USER_MODEL == 'authuser.User':
+        if settings.AUTH_USER_MODEL == 'authtools.User':
             data['name'] = 'John Smith'
 
         form = UserCreationForm(data)
@@ -319,7 +319,7 @@ class UserCreationFormTest(TestCase):
     def test_generated_fields_list(self):
         if settings.AUTH_USER_MODEL == 'auth.User':
             fields = ('username', 'email', 'password1', 'password2')
-        elif settings.AUTH_USER_MODEL == 'authuser.User':
+        elif settings.AUTH_USER_MODEL == 'authtools.User':
             fields = ('email', 'name', 'password1', 'password2')
         elif settings.AUTH_USER_MODEL == 'tests.User':
             fields = ('email', 'full_name', 'preferred_name', 'password1', 'password2')
@@ -410,7 +410,7 @@ class UserAdminTest(TestCase):
     def test_generated_fieldsets(self):
         if settings.AUTH_USER_MODEL == 'auth.User':
             fields = ('username', 'email', 'password')
-        elif settings.AUTH_USER_MODEL == 'authuser.User':
+        elif settings.AUTH_USER_MODEL == 'authtools.User':
             fields = ('email', 'name', 'password')
         elif settings.AUTH_USER_MODEL == 'tests.User':
             fields = ('email', 'full_name', 'preferred_name', 'password')

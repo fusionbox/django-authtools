@@ -7,8 +7,8 @@ from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext_lazy as _
 
-from authuser.models import User
-from authuser.forms import UserCreationForm, AdminUserChangeForm
+from authtools.models import User
+from authtools.forms import UserCreationForm, AdminUserChangeForm
 
 USERNAME_FIELD = get_user_model().USERNAME_FIELD
 

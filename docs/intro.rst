@@ -8,29 +8,29 @@ Installation
 
 1.  Install the package::
 
-        $ pip install django-authuser
+        $ pip install django-authtools
 
     Or you can install it from source::
 
-        $ pip install -e git://github.com/fusionbox/django-authuser@master#egg=django-authuser-dev
+        $ pip install -e git://github.com/fusionbox/django-authtools@master#egg=django-authtools-dev
 
 
 Quick Setup
 -----------
 
-If you want to use the User model provided by authuser (a sensible choice), there are three short steps.
+If you want to use the User model provided by authtools (a sensible choice), there are three short steps.
 
-1.  Add ``authuser`` to your ``INSTALLED_APPS``.
+1.  Add ``authtools`` to your ``INSTALLED_APPS``.
 
 2.  Add the following to your settings.py::
 
-        AUTH_USER_MODEL = 'authuser.User'
+        AUTH_USER_MODEL = 'authtools.User'
 
-3.  Add ``authuser.urls`` to your URL patterns::
+3.  Add ``authtools.urls`` to your URL patterns::
 
         urlpatterns = patterns('',
             # ...
-            url(r'^accounts/', include('authuser.urls')),
+            url(r'^accounts/', include('authtools.urls')),
             # ...
         )
 
@@ -40,7 +40,7 @@ This will set you up with a custom user that
 -  has one ``name`` field instead of ``first_name``, ``last_name`` (see `Falsehoods Programmers Believe About Names <http://www.kalzumeus.com/2010/06/17/falsehoods-programmers-believe-about-names/>`_)
 
 It also gives you a registered admin class that has a less intimidating
-:class:`ReadOnlyPasswordHashWidget <authuser.forms.BetterReadOnlyPasswordHashWidget>`
+:class:`ReadOnlyPasswordHashWidget <authtools.forms.BetterReadOnlyPasswordHashWidget>`
 and the standard auth views (see :doc:`views`).
 
 
@@ -68,17 +68,17 @@ Also, please read this quote from the `Django documentation
     database join, which may have an effect on performance.
 
 However, there are many valid reasons for wanting a User model that you can
-change things on.  django-authuser allows you to that too.  django-authuser
+change things on.  django-authtools allows you to that too.  django-authtools
 provides a couple of abstract classes for subclassing.
 
-.. class:: authuser.models.AbstractEmailUser
+.. class:: authtools.models.AbstractEmailUser
 
     A no-frills email as username model that satisifes the User contract and
     the permissions API needed for the Admin site.
 
-.. class:: authuser.models.AbstractNamedUser
+.. class:: authtools.models.AbstractNamedUser
 
-    A subclass of :class:`~authuser.models.AbstractEmailUser` that adds a name
+    A subclass of :class:`~authtools.models.AbstractEmailUser` that adds a name
     field.
 
 If want to make your custom User model, you can use one of these base classes.
@@ -91,7 +91,7 @@ If want to make your custom User model, you can use one of these base classes.
 If you wanted a User model that had ``full_name`` and ``preferred_name``
 fields instead of just ``name``, you could do this::
 
-    from authuser.models import AbstractEmailUser
+    from authtools.models import AbstractEmailUser
 
     class User(AbstractEmailUser):
         full_name = models.CharField('full name', max_length=255, blank=True)

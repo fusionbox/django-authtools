@@ -1,8 +1,8 @@
-django-authuser
----------------
+django-authtools
+----------------
 
-.. image:: https://travis-ci.org/fusionbox/django-authuser.png
-   :target: http://travis-ci.org/fusionbox/django-authuser
+.. image:: https://travis-ci.org/fusionbox/django-authtools.png
+   :target: http://travis-ci.org/fusionbox/django-authtools
    :alt: Build Status
 
 
@@ -10,11 +10,11 @@ A custom user model app for Django 1.5+ that features email as username and
 other things. It tries to stay true to the built-in user model for the most
 part.
 
-The main differences between authuser's User and django.contrib.auth's are
+The main differences between authtools's User and django.contrib.auth's are
 email as username and class-based auth views.
 
-Read the `django-authuser documentation
-<https://django-authuser.readthedocs.org/en/latest/>`_.
+Read the `django-authtools documentation
+<https://django-authtools.readthedocs.org/en/latest/>`_.
 
 Quickstart
 ==========
@@ -25,19 +25,19 @@ User models
 
 1.  Install the package::
 
-        $ pip install django-authuser
+        $ pip install django-authtools
 
-2.  Add ``authuser`` to your ``INSTALLED_APPS``.
+2.  Add ``authtools`` to your ``INSTALLED_APPS``.
 
 3.  Add the following to your settings.py::
 
-        AUTH_USER_MODEL = 'authuser.User'
+        AUTH_USER_MODEL = 'authtools.User'
 
-4.  Add ``authuser.urls`` to your URL patterns::
+4.  Add ``authtools.urls`` to your URL patterns::
 
         urlpatterns = patterns('',
             # ...
-            url(r'^accounts/', include('authuser.urls')),
+            url(r'^accounts/', include('authtools.urls')),
             # ...
         )
 

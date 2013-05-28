@@ -1,6 +1,6 @@
 from django.db import models
 
-from authuser.models import AbstractEmailUser
+from authtools.models import AbstractEmailUser
 
 
 class User(AbstractEmailUser):

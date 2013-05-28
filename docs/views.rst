@@ -1,9 +1,9 @@
 Views
 =====
 
-.. currentmodule:: authuser.views
+.. currentmodule:: authtools.views
 
-django-authuser provides the following class-based views, intended to be
+django-authtools provides the following class-based views, intended to be
 *mostly* drop-in replacements for their :ref:`built-in
 <django:built-in-auth-views>` counterparts.
 
@@ -14,13 +14,13 @@ them after they reset their password.
 .. note::
 
     The view functions in Django were wrapped in decorators.  The classed-based
-    views provided by django-authuser have the same decorators applied to their
+    views provided by django-authtools have the same decorators applied to their
     view functions. Any subclasses of these views will also have the same
     decorators applied.
 
 .. class:: LoginView
     
-    The view function :func:`authuser.views.login` replaces
+    The view function :func:`authtools.views.login` replaces
     :func:`django:django.contrib.auth.views.login`.
 
     .. attribute:: disallow_authenticated
@@ -30,8 +30,8 @@ them after they reset their password.
 
 .. class:: LogoutView
 
-    The view functions :func:`authuser.views.logout` and
-    :func:`authuser.views.logout_then_login` replace
+    The view functions :func:`authtools.views.logout` and
+    :func:`authtools.views.logout_then_login` replace
     :func:`django:django.contrib.auth.views.logout`
     :func:`django:django.contrib.auth.views.logout_then_login` respectively.
 
@@ -50,7 +50,7 @@ them after they reset their password.
 
 .. class:: PasswordChangeView
 
-    The view function :func:`authuser.views.password_change` replaces
+    The view function :func:`authtools.views.password_change` replaces
     :func:`django:django.contrib.auth.views.password_change`.
 
     .. attribute:: success_url
@@ -60,12 +60,12 @@ them after they reset their password.
 
 .. class:: PasswordChangeDoneView
 
-    The view function :func:`authuser.views.password_change_done` replaces
+    The view function :func:`authtools.views.password_change_done` replaces
     :func:`django:django.contrib.auth.views.password_change_done`.
 
 .. class:: PasswordResetView
 
-    The view function :func:`authuser.views.password_reset` replaces
+    The view function :func:`authtools.views.password_reset` replaces
     :func:`django:django.contrib.auth.views.password_reset`.
 
     .. attribute:: success_url
@@ -82,12 +82,12 @@ them after they reset their password.
 
 .. class:: PasswordResetDoneView
 
-    The view function :func:`authuser.views.password_reset_done` replaces
+    The view function :func:`authtools.views.password_reset_done` replaces
     :func:`django:django.contrib.auth.views.password_reset_done`.
 
 .. class:: PasswordResetConfirmView
 
-    The view function :func:`authuser.views.password_reset_confirm` replaces
+    The view function :func:`authtools.views.password_reset_confirm` replaces
     :func:`django:django.contrib.auth.views.password_reset_confirm`.
 
     .. attribute:: success_url
@@ -108,7 +108,7 @@ them after they reset their password.
 .. class:: PasswordResetConfirmAndLoginView
 
     Available as the view function
-    :func:`authuser.views.password_reset_confirm_and_login`.
+    :func:`authtools.views.password_reset_confirm_and_login`.
     
     This is like :class:`PasswordResetConfirmView`, but also logs the user in
     after resetting their password.  By default, it will redirect the user to
@@ -118,11 +118,11 @@ them after they reset their password.
 
         urlpatterns = patterns('',
             url('^reset/(?P<uidb36>[0-9A-Za-z]{1,13})-(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
-                'authuser.views.password_reset_confirm_and_login', name='password_reset_confirm'),
-            url('^', include('authuser.urls')),
+                'authtools.views.password_reset_confirm_and_login', name='password_reset_confirm'),
+            url('^', include('authtools.urls')),
         )
 
 .. class:: PasswordResetCompleteView
 
-    The view function :func:`authuser.views.password_reset_complete` replaces
+    The view function :func:`authtools.views.password_reset_complete` replaces
     :func:`django:django.contrib.auth.views.password_reset_complete`.

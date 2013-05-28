@@ -1,6 +1,6 @@
 from django.conf.urls import patterns, url
 
-urlpatterns = patterns('authuser.views',
+urlpatterns = patterns('authtools.views',
     url(r'^login/$', 'login', name='login'),
     url(r'^logout/$', 'logout', name='logout'),
     url(r'^password_change/$', 'password_change', name='password_change'),

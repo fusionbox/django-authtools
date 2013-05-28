@@ -29,15 +29,15 @@ def get_version():
         return number + '-' + stdout.decode('utf-8').strip()[:8]
 
 setup(
-    name='django-authuser',
+    name='django-authtools',
     version=get_version(),
     author='Fusionbox, Inc.',
     author_email='programmers@fusionbox.com',
     description=__doc__,
     long_description=read('README.rst'),
-    url='https://django-authuser.readthedocs.org/',
+    url='https://django-authtools.readthedocs.org/',
     license='BSD',
-    packages=[package for package in find_packages() if package.startswith('authuser')],
+    packages=[package for package in find_packages() if package.startswith('authtools')],
     install_requires=install_requires,
     zip_safe=False,
     include_package_data=True,

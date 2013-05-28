@@ -1,12 +1,12 @@
 Forms
 =====
 
-.. currentmodule:: authuser.forms
+.. currentmodule:: authtools.forms
 
-django-authuser provides several Form classes that mimic the forms in
+django-authtools provides several Form classes that mimic the forms in
 django.contrib.auth.forms, but work better with ``USERNAME_FIELD`` and
 ``REQUIRED_FIELDS``.  These forms don't require the
-:class:`authuser.models.User` class in order to work, they should work with any
+:class:`authtools.models.User` class in order to work, they should work with any
 User model that follows the :class:`User class contract <django:django.contrib.auth.models.CustomUser>`.
 
 .. class:: UserCreationForm

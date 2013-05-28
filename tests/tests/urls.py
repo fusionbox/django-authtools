@@ -11,9 +11,9 @@ def dumbview(request):
 
 
 urlpatterns = patterns('',
-    url('^logout-then-login/$', 'authuser.views.logout_then_login', name='logout_then_login'),
+    url('^logout-then-login/$', 'authtools.views.logout_then_login', name='logout_then_login'),
     url('^login_required/$', login_required(dumbview)),
-    url('^reset_and_login/(?P<uidb36>[0-9A-Za-z]{1,13})-(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$', 'authuser.views.password_reset_confirm_and_login'),
+    url('^reset_and_login/(?P<uidb36>[0-9A-Za-z]{1,13})-(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$', 'authtools.views.password_reset_confirm_and_login'),
 
-    url('^', include('authuser.urls')),
+    url('^', include('authtools.urls')),
 )

@@ -11,7 +11,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.staticfiles',
     'tests',
-    'authuser',
+    'authtools',
 )
 
 DATABASES = {
