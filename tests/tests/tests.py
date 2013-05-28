@@ -54,6 +54,14 @@ class PasswordResetTest(PasswordResetTest):
     test_confirm_redirect_custom_named = None
 
 
+    def test_user_only_fetched_once(self):
+        url, confirm_path = self._test_confirm_start()
+        with self.assertNumQueries(1):
+            # the confirm view is only allowed to fetch the user object a
+            # single time
+            self.client.get(confirm_path)
+
+
 class ChangePasswordTest(ChangePasswordTest):
     urls = 'authuser.urls'
 

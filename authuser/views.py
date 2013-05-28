@@ -14,7 +14,7 @@ from django.contrib import auth
 from django.contrib.sites.models import get_current_site
 from django.core.urlresolvers import reverse_lazy
 from django.shortcuts import redirect, resolve_url
-from django.utils.functional import memoize, lazy
+from django.utils.functional import lazy
 from django.utils.http import base36_to_int, is_safe_url
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
@@ -224,6 +224,7 @@ class PasswordResetConfirmView(AuthDecoratorsMixin, FormView):
 
     def dispatch(self, *args, **kwargs):
         assert self.kwargs.get('uidb36') is not None and self.kwargs.get('token') is not None
+        self.user = self.get_user()
         return super(PasswordResetConfirmView, self).dispatch(*args, **kwargs)
 
     def get_user(self):
@@ -232,15 +233,14 @@ class PasswordResetConfirmView(AuthDecoratorsMixin, FormView):
             return User._default_manager.get(pk=uid_int)
         except (ValueError, OverflowError, User.DoesNotExist):
             return None
-    get_user = memoize(get_user, {},  1)
 
     def valid_link(self):
-        user = self.get_user()
+        user = self.user
         return user is not None and self.token_generator.check_token(user, self.kwargs.get('token'))
 
     def get_form_kwargs(self):
         kwargs = super(PasswordResetConfirmView, self).get_form_kwargs()
-        kwargs['user'] = self.get_user()
+        kwargs['user'] = self.user
         return kwargs
 
     def get_context_data(self, **kwargs):
