@@ -76,7 +76,7 @@ class AbstractNamedUser(AbstractEmailUser):
 
 
 class User(AbstractNamedUser):
-    class Meta:
+    class Meta(AbstractNamedUser.Meta):
         swappable = 'AUTH_USER_MODEL'
         verbose_name = _('user')
         verbose_name_plural = _('users')
