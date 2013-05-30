@@ -20,6 +20,7 @@ Contents:
     admin
     forms
     views
+    changelog
 
 Development
 -----------

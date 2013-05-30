@@ -1,0 +1,12 @@
+0.1.1 (released May 30, 2013)
+-----------------------------
+
+* some bugfixes:
+
+  - Call :meth:`UserManager.normalize_email` on an instance, not a class.
+  - :class:`~authtools.models.User` should inherit its parent's ``Meta``.
+
+0.1.0 (released May 28, 2013)
+-----------------------------
+
+- django-authtools
