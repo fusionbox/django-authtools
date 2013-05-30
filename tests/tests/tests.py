@@ -443,3 +443,10 @@ class UserManagerTest(TestCase):
 
         self.assertTrue(u.is_staff)
         self.assertTrue(u.is_superuser)
+
+
+class UserModelTest(TestCase):
+    @unittest.skipUnless(settings.AUTH_USER_MODEL == 'authtools.User',
+                         "only check authuser's ordering")
+    def test_default_ordering(self):
+        self.assertSequenceEqual(['name', 'email'], User._meta.ordering)
