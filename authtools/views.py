@@ -63,7 +63,7 @@ class WithNextUrlMixin(object):
 
 def DecoratorMixin(decorator):
     """
-    Convers a decorator written for a function view into a mixin for a
+    Converts a decorator written for a function view into a mixin for a
     class-based view.
 
     ::
