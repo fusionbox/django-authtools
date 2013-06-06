@@ -20,6 +20,7 @@ Contents:
     admin
     forms
     views
+    how-to/index
     changelog
 
 Development
