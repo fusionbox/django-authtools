@@ -130,7 +130,7 @@ field. Here's how I've done it in the past.
 
 
         class User(AbstractNamedUser):
-            username = models.CharField(_('username'), max_length=30, unique=True),
+            username = models.CharField(_('username'), max_length=30, unique=True)
             first_name = models.CharField(_('first name'), max_length=30, blank=True)
             last_name = models.CharField(_('last name'), max_length=30, blank=True)
 
