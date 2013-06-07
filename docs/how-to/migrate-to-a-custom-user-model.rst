@@ -125,7 +125,6 @@ field. Here's how I've done it in the past.
 
         from django.db import models
         from django.utils.translation import ugettext_lazy as _
-        from django.core import validators
 
         from authtools.models import AbstractNamedUser
 
