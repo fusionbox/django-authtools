@@ -144,7 +144,12 @@ field. Here's how I've done it in the past.
     recommends that you split it up into 3 steps.
 
 
-3.  Make a migration to copy ``first_name``/``last_name`` into ``name``. ::
+3.  Make a schema migration to add those fields. ::
+
+        $ python manage.py schemamigration --auto accounts
+
+
+4.  Make a data migration to copy ``first_name``/``last_name`` into ``name``. ::
 
         $ python manage.py datamigration accounts consolidate_name_field
 
@@ -166,11 +171,6 @@ field. Here's how I've done it in the past.
     The backwards migration does make some assumptions about how names work,
     but those are the assumptions you are forced to make when using a system
     that assumes people have two names.
-
-
-4.  Run the migrations. ::
-
-        $ python manage.py migrate accounts
 
 
 5.  Delete the columns you don't want on your User model. For me, that's
