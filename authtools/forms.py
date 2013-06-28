@@ -102,6 +102,12 @@ class UserChangeForm(forms.ModelForm):
         if DJANGO_VERSION >= (1, 6):
             fields = '__all__'
 
+    def __init__(self, *args, **kwargs):
+        super(UserChangeForm, self).__init__(*args, **kwargs)
+        f = self.fields.get('user_permissions', None)
+        if f is not None:
+            f.queryset = f.queryset.select_related('content_type')
+
     def clean_password(self):
         # Regardless of what the user provides, return the initial value.
         # This is done here, rather than on the field, because the
