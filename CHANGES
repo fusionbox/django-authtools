@@ -1,3 +1,11 @@
+0.1.2 (released July 01, 2013)
+------------------------------
+
+  - Use ``prefetch_related`` in the :class:`~authtools.forms.UserChangeForm`
+    to avoid doing hundreds of ``ContentType`` queries. The form from
+    Django has the same feature, it wasn't copied over correctly in our
+    original form.
+
 0.1.1 (released May 30, 2013)
 -----------------------------
 
