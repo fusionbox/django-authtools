@@ -254,3 +254,6 @@ texinfo_documents = [
 intersphinx_mapping = {
     'django': ('https://docs.djangoproject.com/en/1.5/', 'https://docs.djangoproject.com/en/1.5/_objects/'),
 }
+
+sys.path.insert(0, os.path.abspath('../tests'))
+os.environ['DJANGO_SETTINGS_MODULE'] = 'tests.settings'
