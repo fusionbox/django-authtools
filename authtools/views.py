@@ -292,7 +292,7 @@ class PasswordResetCompleteView(TemplateView):
     login_url = settings.LOGIN_URL
 
     def get_login_url(self):
-        return self.login_url
+        return resolve_url(self.login_url)
 
     def get_context_data(self, **kwargs):
         kwargs = super(PasswordResetCompleteView, self).get_context_data(**kwargs)

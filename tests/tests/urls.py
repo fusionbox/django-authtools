@@ -22,6 +22,6 @@ else:
 
 urlpatterns += patterns('',
     url('^logout-then-login/$', 'authtools.views.logout_then_login', name='logout_then_login'),
-    url('^login_required/$', login_required(dumbview)),
+    url('^login_required/$', login_required(dumbview), name='login_required'),
     url('^', include('authtools.urls')),
 )
