@@ -80,3 +80,6 @@ class User(AbstractNamedUser):
         swappable = 'AUTH_USER_MODEL'
         verbose_name = _('user')
         verbose_name_plural = _('users')
+
+    def __unicode__(self):
+        return self.name
