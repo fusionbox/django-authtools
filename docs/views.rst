@@ -105,6 +105,19 @@ them after they reset their password.
         function. Default is
         :class:`django:django.contrib.auth.forms.SetPasswordForm`.
 
+    .. note::
+
+      `Django 1.6 changed this view
+      <https://docs.djangoproject.com/en/dev/releases/1.6/#django-contrib-auth-password-reset-uses-base-64-encoding-of-user-pk>`_
+      to support base-64 encoding the user's pk. Django provides a different
+      view for each type of encoding, but our view works with both, so we only
+      have a single view.
+
+      This was a backwards-incompatible change in Django, so be sure to update
+      your urlpatterns and anywhere you reverse the ``password_reset_confirm``
+      URL (like the password reset email template,
+      ``registration/password_reset_email.html``).
+
 .. class:: PasswordResetConfirmAndLoginView
 
     Available as the view function
@@ -114,13 +127,26 @@ them after they reset their password.
     after resetting their password.  By default, it will redirect the user to
     the :django:setting:`LOGIN_REDIRECT_URL`.
 
-    If you wanted to use this view, you could have a urls config that looks like::
+    If you wanted to use this view, you could have a url config that looks like::
 
         urlpatterns = patterns('',
             url('^reset/(?P<uidb36>[0-9A-Za-z]{1,13})-(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
                 'authtools.views.password_reset_confirm_and_login', name='password_reset_confirm'),
             url('^', include('authtools.urls')),
         )
+
+    .. note::
+
+      In Django 1.6, the ``uidb36`` kwarg was changed to ``uidb64``, so your
+      url will look like::
+
+          url(r'^reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
+              'authtools.views.password_reset_confirm_and_login',
+              name='password_reset_confirm'),
+
+      Like :class:`PasswordResetConfirmView`, this view supports both ``uid36``
+      and ``uidb64``.
+
 
 .. class:: PasswordResetCompleteView
 
