@@ -219,15 +219,24 @@ class PasswordResetConfirmView(AuthDecoratorsMixin, FormView):
     success_url = reverse_lazy('password_reset_complete')
 
     def dispatch(self, *args, **kwargs):
-        assert self.kwargs.get('uidb36') is not None and self.kwargs.get('token') is not None
+        assert self.kwargs.get('token') is not None
         self.user = self.get_user()
         return super(PasswordResetConfirmView, self).dispatch(*args, **kwargs)
 
     def get_user(self):
+        # django 1.5 uses uidb36, django 1.6 uses uidb64
+        uidb36 = self.kwargs.get('uidb36')
+        uidb64 = self.kwargs.get('uidb64')
+        assert bool(uidb36) ^ bool(uidb64)
         try:
-            uid_int = base36_to_int(self.kwargs.get('uidb36'))
-            return User._default_manager.get(pk=uid_int)
-        except (ValueError, OverflowError, User.DoesNotExist):
+            if uidb36:
+                uid = base36_to_int(uidb36)
+            else:
+                # urlsafe_base64_decode is not available in django 1.5
+                from django.utils.http import urlsafe_base64_decode
+                uid = urlsafe_base64_decode(uidb64)
+            return User._default_manager.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
             return None
 
     def valid_link(self):
@@ -257,7 +266,12 @@ class PasswordResetConfirmView(AuthDecoratorsMixin, FormView):
     def save_form(self, form):
         return form.save()
 
+
 password_reset_confirm = PasswordResetConfirmView.as_view()
+
+# Django 1.6 added this as a temporary shim, see #14881. Since our view
+# works with base 36 or base 64, we can use the same view for both.
+password_reset_confirm_uidb36 = PasswordResetConfirmView.as_view()
 
 
 class PasswordResetConfirmAndLoginView(PasswordResetConfirmView):

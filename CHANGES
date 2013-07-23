@@ -1,3 +1,15 @@
+0.2.0
+-----
+
+  - Django 1.6 support.
+
+    Django 1.6 `broke backwards compatibility
+    <https://docs.djangoproject.com/en/dev/releases/1.6/#django-contrib-auth-password-reset-uses-base-64-encoding-of-user-pk>`_
+    of the ``password_reset_confirm`` view. Be sure to update any references to
+    this URL. Rather than using a separate view for each encoding, authtools uses
+    :class:`a single view <authtools.views.PasswordResetConfirmView>` that works
+    with both.
+
 0.1.2 (released July 01, 2013)
 ------------------------------
 
