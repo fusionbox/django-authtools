@@ -10,6 +10,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.tests.utils import skipIfCustomUser
 from django.utils.http import urlquote
 from django.test import TestCase
+from django.test.client import RequestFactory
 from django.test.utils import override_settings
 from django.utils import unittest
 from django.utils.encoding import force_text
@@ -40,6 +41,7 @@ except ImportError:
 
 from authtools.admin import BASE_FIELDS
 from authtools.forms import UserCreationForm, UserChangeForm
+from authtools.views import PasswordResetCompleteView
 
 User = get_user_model()
 
@@ -98,6 +100,16 @@ class PasswordResetTest(PasswordResetTest):
         response = self.client.get(response['Location'])
 
         self.assertIn('login_url', response.context)
+
+    def test_confirm_login_url_resolves(self):
+        complete_view = PasswordResetCompleteView.as_view(login_url='login_required')
+        request_factory = RequestFactory()
+        response = complete_view(request_factory.get('/xxx/'))
+        self.assertEqual(response.context_data['login_url'], reverse('login_required'))
+
+        complete_view2 = PasswordResetCompleteView.as_view(login_url='/dont-change-me/')
+        response = complete_view2(request_factory.get('/xxx/'))
+        self.assertEqual(response.context_data['login_url'], '/dont-change-me/')
 
     def test_confirm_and_login(self):
         url, path = self._test_confirm_start()
