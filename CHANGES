@@ -10,6 +10,9 @@
     :class:`a single view <authtools.views.PasswordResetConfirmView>` that works
     with both.
 
+  - Bugfix: if LOGIN_URL was a URL name, it wasn't being reversed in the
+    PasswordResetConfirmView.
+
 0.1.2 (released July 01, 2013)
 ------------------------------
 
