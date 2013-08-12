@@ -66,7 +66,7 @@ class StrippedNamedUserAdmin(StrippedUserAdmin):
     search_fields = ('email', 'name',)
 
 
-class UserAdmin(StrippedNamedUserAdmin):
+class UserAdmin(StrippedUserAdmin):
     fieldsets = (
         BASE_FIELDS,
         ADVANCED_PERMISSION_FIELDS,
