@@ -21,6 +21,7 @@ Contents:
     forms
     views
     how-to/index
+    talks
     changelog
 
 Development
