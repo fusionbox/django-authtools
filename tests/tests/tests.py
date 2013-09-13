@@ -3,6 +3,7 @@ We're able to borrow most of django's auth view tests.
 
 """
 
+from django.core import mail
 from django.core.urlresolvers import reverse
 from django.contrib.sites.models import Site, RequestSite
 from django.contrib.auth import REDIRECT_FIELD_NAME, get_user_model
@@ -462,3 +463,16 @@ class UserModelTest(TestCase):
                          "only check authuser's ordering")
     def test_default_ordering(self):
         self.assertSequenceEqual(['name', 'email'], User._meta.ordering)
+
+    def test_send_mail(self):
+        abstract_user = User(email='foo@bar.com')
+        abstract_user.email_user(subject="Subject here",
+            message="This is a message", from_email="from@domain.com")
+        # Test that one message has been sent.
+        self.assertEqual(len(mail.outbox), 1)
+        # Verify that test email contains the correct attributes:
+        message = mail.outbox[0]
+        self.assertEqual(message.subject, "Subject here")
+        self.assertEqual(message.body, "This is a message")
+        self.assertEqual(message.from_email, "from@domain.com")
+        self.assertEqual(message.to, [abstract_user.email])
