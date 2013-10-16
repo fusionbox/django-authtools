@@ -68,8 +68,8 @@ Also, please read this quote from the `Django documentation
     database join, which may have an effect on performance.
 
 However, there are many valid reasons for wanting a User model that you can
-change things on.  django-authtools allows you to that too.  django-authtools
-provides a couple of abstract classes for subclassing.
+change things on.  django-authtools allows you to do that too.
+django-authtools provides a couple of abstract classes for subclassing.
 
 .. class:: authtools.models.AbstractEmailUser
 
