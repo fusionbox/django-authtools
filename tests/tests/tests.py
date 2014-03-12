@@ -41,7 +41,7 @@ except ImportError:
 
 from authtools.admin import BASE_FIELDS
 from authtools.forms import UserCreationForm, UserChangeForm
-from authtools.views import PasswordResetCompleteView
+from authtools.views import PasswordResetCompleteView, resolve_url_lazy
 
 User = get_user_model()
 
@@ -52,6 +52,11 @@ def skipIfNotCustomUser(test_func):
 
 class AuthViewNamedURLTests(AuthViewNamedURLTests):
     urls = 'authtools.urls'
+
+
+class UtilsTest(TestCase):
+    def test_resolve_lazy_unicode(self):
+        self.assertTrue(resolve_url_lazy(u'/'))
 
 
 class PasswordResetTest(PasswordResetTest):
