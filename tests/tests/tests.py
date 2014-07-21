@@ -188,7 +188,6 @@ class LoginTest(LoginTest):
                          '/view/?param=https://example.com',
                          '/view?param=ftp://exampel.com',
                          'view/?param=//example.com',
-                         'https:///',
                          '//testserver/',
                          '/url%20with%20spaces/'):  # see ticket #12534
             safe_url = '%(url)s?%(next)s=%(good_url)s' % {
@@ -245,7 +244,6 @@ class LogoutTest(LogoutTest):
                          '/view/?param=https://example.com',
                          '/view?param=ftp://exampel.com',
                          'view/?param=//example.com',
-                         'https:///',
                          '//testserver/',
                          '/url%20with%20spaces/'):  # see ticket #12534
             safe_url = '%(url)s?%(next)s=%(good_url)s' % {
