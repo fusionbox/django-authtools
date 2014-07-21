@@ -223,6 +223,9 @@ class PasswordResetConfirmView(AuthDecoratorsMixin, FormView):
         self.user = self.get_user()
         return super(PasswordResetConfirmView, self).dispatch(*args, **kwargs)
 
+    def get_queryset(self):
+        return User._default_manager.all()
+
     def get_user(self):
         # django 1.5 uses uidb36, django 1.6 uses uidb64
         uidb36 = self.kwargs.get('uidb36')
@@ -235,7 +238,7 @@ class PasswordResetConfirmView(AuthDecoratorsMixin, FormView):
                 # urlsafe_base64_decode is not available in django 1.5
                 from django.utils.http import urlsafe_base64_decode
                 uid = urlsafe_base64_decode(uidb64)
-            return User._default_manager.get(pk=uid)
+            return self.get_queryset().get(pk=uid)
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
             return None
 
