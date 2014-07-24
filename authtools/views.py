@@ -8,7 +8,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model, REDIRECT_FIELD_NAME
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import (AuthenticationForm, SetPasswordForm,
-                                       PasswordChangeForm, PasswordResetForm)
+                                       PasswordChangeForm)
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib import auth
 from django.contrib.sites.models import get_current_site
@@ -20,6 +20,8 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import FormView, TemplateView, RedirectView
+
+from authtools.forms import PasswordResetForm
 
 
 User = get_user_model()

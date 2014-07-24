@@ -79,6 +79,29 @@ them after they reset their password.
         The form class to present the user.  This replaces the
         ``password_reset_form`` parameter present in the built-in function.
 
+    .. warning::
+
+        Django 1.6 `removed the email check from this view
+        <https://code.djangoproject.com/ticket/19758>`_ in order to avoid
+        leaking user email addresses.
+
+        Django-authtools authors considered that this was worsening
+        usability. This security issue was also considered irrelevant
+        since the registration form is leaking email addresses.
+
+        Therefore this view leaks user email addresses. If you wish to restore
+        default behavior, you can change its form::
+
+            from django.contrib.auth.forms import PasswordResetForm
+            from authtools.views import PasswordResetView as OldPasswordResetView
+
+            class PasswordResetView(OldPasswordResetView):
+                # The default form is authtools.form.PasswordResetForm
+                form_class = PasswordResetForm
+
+            password_reset = PasswordResetForm.as_view()
+
+
 
 .. class:: PasswordResetDoneView
 
