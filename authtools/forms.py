@@ -141,6 +141,11 @@ class AdminUserChangeForm(UserChangeForm):
 
 
 class PasswordResetForm(OldPasswordResetForm):
+    error_messages = dict(getattr(OldPasswordResetForm, 'error_messages', {}))
+    error_messages['unknown'] = _("This email address doesn't have an "
+                                  "associated user account. Are you "
+                                  "sure you've registered?")
+
     def clean_email(self):
         super_clean_email = getattr(
             super(PasswordResetForm, self), 'clean_email', None)
@@ -156,7 +161,5 @@ class PasswordResetForm(OldPasswordResetForm):
         qs = User._default_manager.filter(is_active=True, email__iexact=email)
         results = [user for user in qs if user.has_usable_password()]
         if not results:
-            raise forms.ValidationError(_("This email address doesn't have an "
-                                          "associated user account. Are you "
-                                          "sure you've registered?"))
+            raise forms.ValidationError(self.error_messages['unknown'])
         return email
