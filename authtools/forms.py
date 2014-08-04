@@ -140,7 +140,7 @@ class AdminUserChangeForm(UserChangeForm):
                 " <a href=\"password/\">this form</a>.")
 
 
-class PasswordResetForm(OldPasswordResetForm):
+class FriendlyPasswordResetForm(OldPasswordResetForm):
     error_messages = dict(getattr(OldPasswordResetForm, 'error_messages', {}))
     error_messages['unknown'] = _("This email address doesn't have an "
                                   "associated user account. Are you "
@@ -148,7 +148,7 @@ class PasswordResetForm(OldPasswordResetForm):
 
     def clean_email(self):
         super_clean_email = getattr(
-            super(PasswordResetForm, self), 'clean_email', None)
+            super(FriendlyPasswordResetForm, self), 'clean_email', None)
         if callable(super_clean_email):  # Django == 1.5
             # Django 1.5 sets self.user_cache
             return super_clean_email()

@@ -94,11 +94,11 @@ them after they reset their password.
 
             # youraccountsapp/views.py
             from authtools.views import PasswordResetView as OldPasswordResetView
-            from authtools.forms import PasswordResetForm
+            from authtools.forms import FriendlyPasswordResetForm
 
             class PasswordResetView(OldPasswordResetView):
                 # The default form is authtools.form.PasswordResetForm
-                form_class = PasswordResetForm
+                form_class = FriendlyPasswordResetForm
 
             password_reset = PasswordResetView.as_view()
 
