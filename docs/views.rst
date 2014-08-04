@@ -85,21 +85,30 @@ them after they reset their password.
         <https://code.djangoproject.com/ticket/19758>`_ in order to avoid
         leaking user email addresses.
 
-        Django-authtools authors considered that this was worsening
-        usability. This security issue was also considered irrelevant
-        since the registration form is leaking email addresses.
+        In some cases, this can worsen user experience without providing any
+        extra security. For example, if email addresses are unique, then the
+        registration form will be leaking email addresses.
 
-        Therefore this view leaks user email addresses. If you wish to restore
-        default behavior, you can change its form::
+        If you're in this case, and you wish to improve usability of this view
+        informing the user if they did any typo, you can do::
 
-            from django.contrib.auth.forms import PasswordResetForm
+            # youraccountsapp/views.py
             from authtools.views import PasswordResetView as OldPasswordResetView
+            from authtools.forms import PasswordResetForm
 
             class PasswordResetView(OldPasswordResetView):
                 # The default form is authtools.form.PasswordResetForm
                 form_class = PasswordResetForm
 
             password_reset = PasswordResetForm.as_view()
+
+            # yourproject/urls.py
+            urlpatterns += patterns( # ...
+                # ...
+                url('^auth/password_reset/$', 'youraccontsapp.views.password_reset'),
+                url('^auth/', include('authtools.urls'),
+                # ...
+            )
 
 
 
