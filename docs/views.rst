@@ -100,7 +100,7 @@ them after they reset their password.
                 # The default form is authtools.form.PasswordResetForm
                 form_class = PasswordResetForm
 
-            password_reset = PasswordResetForm.as_view()
+            password_reset = PasswordResetView.as_view()
 
             # yourproject/urls.py
             urlpatterns += patterns( # ...
