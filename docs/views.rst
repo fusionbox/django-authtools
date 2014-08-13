@@ -79,37 +79,34 @@ them after they reset their password.
         The form class to present the user.  This replaces the
         ``password_reset_form`` parameter present in the built-in function.
 
-    .. warning::
+.. function:: friendly_password_reset
 
-        Django 1.6 `removed the email check from this view
-        <https://code.djangoproject.com/ticket/19758>`_ in order to avoid
-        leaking user email addresses.
+    Django 1.6 `removed the email check from this view
+    <https://code.djangoproject.com/ticket/19758>`_ in order to avoid
+    leaking user email addresses.
 
-        In some cases, this can worsen user experience without providing any
-        extra security. For example, if email addresses are unique, then the
-        registration form will be leaking email addresses.
+    In some cases, this can worsen user experience without providing any
+    extra security. For example, if email addresses are unique, then the
+    registration form will be leaking email addresses.
 
-        If you're in this case, and you wish to improve usability of this view
-        informing the user if they did any typo, you can do::
+    If you're in this case, and you wish to improve usability of this view
+    informing the user if they did any typo, you can do::
 
-            # youraccountsapp/views.py
-            from authtools.views import PasswordResetView as OldPasswordResetView
-            from authtools.forms import FriendlyPasswordResetForm
+        # yourproject/urls.py
+        urlpatterns += patterns( # ...
+            # ...
+            url('^auth/password_reset/$',
+                'authtools.views.friendly_password_reset',
+                name='password_reset'),
+            url('^auth/', include('authtools.urls'),
+            # ...
+        )
 
-            class PasswordResetView(OldPasswordResetView):
-                # The default form is authtools.form.PasswordResetForm
-                form_class = FriendlyPasswordResetForm
+    This view is defined like this::
 
-            password_reset = PasswordResetView.as_view()
-
-            # yourproject/urls.py
-            urlpatterns += patterns( # ...
-                # ...
-                url('^auth/password_reset/$', 'youraccontsapp.views.password_reset'),
-                url('^auth/', include('authtools.urls'),
-                # ...
-            )
-
+        friendly_password_reset = PasswordResetView.as_view(
+            form_class=FriendlyPasswordResetForm
+        )
 
 
 .. class:: PasswordResetDoneView

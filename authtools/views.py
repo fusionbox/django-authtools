@@ -21,6 +21,8 @@ from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import FormView, TemplateView, RedirectView
 
+from authtools.forms import FriendlyPasswordResetForm
+
 
 User = get_user_model()
 
@@ -204,6 +206,9 @@ class PasswordResetView(CsrfProtectMixin, FormView):
         return super(PasswordResetView, self).form_valid(form)
 
 password_reset = PasswordResetView.as_view()
+friendly_password_reset = PasswordResetView.as_view(
+    form_class=FriendlyPasswordResetForm
+)
 
 
 class PasswordResetDoneView(TemplateView):
