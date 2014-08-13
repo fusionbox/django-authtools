@@ -4,6 +4,9 @@ from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib import admin
 
+from authtools.views import PasswordResetView
+from authtools.forms import FriendlyPasswordResetForm
+
 admin.autodiscover()
 
 
@@ -22,6 +25,9 @@ else:
 
 urlpatterns += patterns('',
     url('^logout-then-login/$', 'authtools.views.logout_then_login', name='logout_then_login'),
+    url('^friendly_password_reset/$',
+        PasswordResetView.as_view(form_class=FriendlyPasswordResetForm),
+        name='friendly_password_reset'),
     url('^login_required/$', login_required(dumbview), name='login_required'),
     url('^', include('authtools.urls')),
 )

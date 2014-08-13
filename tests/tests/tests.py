@@ -42,7 +42,7 @@ except ImportError:
     )
 
 from authtools.admin import BASE_FIELDS
-from authtools.forms import UserCreationForm, UserChangeForm, PasswordResetForm
+from authtools.forms import UserCreationForm, UserChangeForm, FriendlyPasswordResetForm
 from authtools.views import PasswordResetCompleteView
 
 User = get_user_model()
@@ -73,12 +73,13 @@ class PasswordResetTest(PasswordResetTest):
         self.assertIn(force_text(error), form_errors)
 
     # test the django 1.5 behavior
-    def test_email_not_found(self):
+    def test_email_not_found_in_friendly_password_reset_form(self):
         "Error is raised if the provided email address isn't currently registered"
-        response = self.client.get('/password_reset/')
+        response = self.client.get('/friendly_password_reset/')
         self.assertEqual(response.status_code, 200)
-        response = self.client.post('/password_reset/', {'email': 'not_a_real_email@email.com'})
-        self.assertFormError(response, PasswordResetForm.error_messages['unknown'])
+        response = self.client.post('/friendly_password_reset/',
+                                    {'email': 'not_a_real_email@email.com'})
+        self.assertFormError(response, FriendlyPasswordResetForm.error_messages['unknown'])
         self.assertEqual(len(mail.outbox), 0)
 
     def test_user_only_fetched_once(self):
