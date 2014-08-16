@@ -1,6 +1,13 @@
 CHANGES
 =======
 
+1.0.0 (released August 16, 2014)
+--------------------------------
+
+  - Add friendly_password_reset view and FriendlyPasswordResetForm (Antoine Catton, #18)
+  - **Bugfix** Allow LOGIN_REDIRECT_URL to be unicode (Alan Johnson, Gavin Wahl, Rocky Meza, #13)
+  - **Backwards Incompatible** Dropped support for Python 3.2
+
 0.2.2 (released July 21, 2014)
 -----------------------------
 
