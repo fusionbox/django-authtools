@@ -2,6 +2,7 @@
 We're able to borrow most of django's auth view tests.
 
 """
+import itertools
 
 from django.core import mail
 from django.core.urlresolvers import reverse
@@ -41,7 +42,7 @@ except ImportError:
     )
 
 from authtools.admin import BASE_FIELDS
-from authtools.forms import UserCreationForm, UserChangeForm
+from authtools.forms import UserCreationForm, UserChangeForm, FriendlyPasswordResetForm
 from authtools.views import PasswordResetCompleteView
 
 User = get_user_model()
@@ -65,6 +66,21 @@ class PasswordResetTest(PasswordResetTest):
     test_email_found_custom_from = None
     test_confirm_redirect_custom = None
     test_confirm_redirect_custom_named = None
+
+    def assertFormError(self, response, error):
+        """Assert that error is found in response.context['form'] errors"""
+        form_errors = list(itertools.chain(*response.context['form'].errors.values()))
+        self.assertIn(force_text(error), form_errors)
+
+    # test the django 1.5 behavior
+    def test_email_not_found_in_friendly_password_reset_form(self):
+        "Error is raised if the provided email address isn't currently registered"
+        response = self.client.get('/friendly_password_reset/')
+        self.assertEqual(response.status_code, 200)
+        response = self.client.post('/friendly_password_reset/',
+                                    {'email': 'not_a_real_email@email.com'})
+        self.assertFormError(response, FriendlyPasswordResetForm.error_messages['unknown'])
+        self.assertEqual(len(mail.outbox), 0)
 
     def test_user_only_fetched_once(self):
         url, confirm_path = self._test_confirm_start()

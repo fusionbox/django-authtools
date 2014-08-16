@@ -1,7 +1,10 @@
 from __future__ import unicode_literals
 
 from django import forms, VERSION as DJANGO_VERSION
-from django.contrib.auth.forms import ReadOnlyPasswordHashField, ReadOnlyPasswordHashWidget
+from django.contrib.auth.forms import (
+    ReadOnlyPasswordHashField, ReadOnlyPasswordHashWidget,
+    PasswordResetForm as OldPasswordResetForm
+)
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import identify_hasher
 from django.utils.translation import ugettext_lazy as _, ugettext
@@ -135,3 +138,28 @@ class AdminUserChangeForm(UserChangeForm):
                 "Raw passwords are not stored, so there is no way to see this"
                 " user's password, but you can change the password using"
                 " <a href=\"password/\">this form</a>.")
+
+
+class FriendlyPasswordResetForm(OldPasswordResetForm):
+    error_messages = dict(getattr(OldPasswordResetForm, 'error_messages', {}))
+    error_messages['unknown'] = _("This email address doesn't have an "
+                                  "associated user account. Are you "
+                                  "sure you've registered?")
+
+    def clean_email(self):
+        super_clean_email = getattr(
+            super(FriendlyPasswordResetForm, self), 'clean_email', None)
+        if callable(super_clean_email):  # Django == 1.5
+            # Django 1.5 sets self.user_cache
+            return super_clean_email()
+
+        # Simulate Django 1.5 behavior in Django >= 1.6.
+        # This is not as efficient as in Django 1.5, since clean_email() and
+        # save() will be running the same query twice.
+        # Whereas Django 1.5 just caches it.
+        email = self.cleaned_data['email']
+        qs = User._default_manager.filter(is_active=True, email__iexact=email)
+        results = [user for user in qs if user.has_usable_password()]
+        if not results:
+            raise forms.ValidationError(self.error_messages['unknown'])
+        return email

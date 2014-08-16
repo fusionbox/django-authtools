@@ -24,6 +24,17 @@ User model that follows the :class:`User class contract <django:django.contrib.a
     Same as :class:`UserChangeForm`, but adds a link to the admin change
     password form.
 
+.. class:: FriendlyPasswordResetForm
+
+    Basically the same as
+    :class:`django:django.contrib.auth.forms.PasswordResetForm`, but checks the
+    email address against the database and gives a friendly error message.
+
+    .. warning::
+
+        This form leaks user email addresses. Please refer to the view
+        :func:`~authtools.views.friendly_password_reset`.
+
 It also provides a Widget class.
 
 .. class:: BetterReadOnlyPasswordHashWidget
