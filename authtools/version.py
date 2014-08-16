@@ -1,6 +1,6 @@
 import subprocess
 
-STAGE = 'alpha'
+STAGE = 'final'
 
 VERSION = (1, 0, 0, STAGE)
 
