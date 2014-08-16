@@ -34,7 +34,7 @@ setup(
     author='Fusionbox, Inc.',
     author_email='programmers@fusionbox.com',
     description=__doc__,
-    long_description=read('README.rst'),
+    long_description='\n\n'.join([read('README.rst'), read('CHANGES.rst')]),
     url='https://django-authtools.readthedocs.org/',
     license='BSD',
     packages=[package for package in find_packages() if package.startswith('authtools')],

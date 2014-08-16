@@ -1,4 +1,4 @@
-include README.rst LICENSE Makefile
+include README.rst CHANGES.rst LICENSE Makefile
 recursive-include tests *.py
 recursive-include docs *
 prune docs/_build
