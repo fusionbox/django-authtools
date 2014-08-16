@@ -16,6 +16,7 @@ from django.core.urlresolvers import reverse_lazy
 from django.shortcuts import redirect, resolve_url
 from django.utils.functional import lazy
 from django.utils.http import base36_to_int, is_safe_url
+from django.utils import six
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
@@ -26,7 +27,19 @@ from authtools.forms import FriendlyPasswordResetForm
 
 User = get_user_model()
 
-resolve_url_lazy = lazy(resolve_url, str)
+
+def _safe_resolve_url(url):
+    """
+    Previously, resolve_url_lazy would fail if the url was a unicode object.
+    See <https://github.com/fusionbox/django-authtools/issues/13> for more
+    information.
+
+    Thanks to GitHub user alanwj for pointing out the problem and providing
+    this solution.
+    """
+    return six.text_type(resolve_url(url))
+
+resolve_url_lazy = lazy(_safe_resolve_url, six.text_type)
 
 
 class WithCurrentSiteMixin(object):
