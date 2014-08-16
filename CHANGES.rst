@@ -9,7 +9,7 @@ CHANGES
   - **Backwards Incompatible** Dropped support for Python 3.2
 
 0.2.2 (released July 21, 2014)
------------------------------
+------------------------------
 
   - Update safe urls in tests
   - Give the ability to restrain which users can reset their password
