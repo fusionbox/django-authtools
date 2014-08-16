@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
-import subprocess
 import os
+
+from authtools.version import get_version
 
 __doc__ = ("Custom user model app for Django featuring email as username and"
            " class-based views for authentication.")
@@ -15,18 +16,6 @@ install_requires = [
     'Django>=1.5',
 ]
 
-version = (0, 2, 0, 'alpha')
-
-
-def get_version():
-    number = '.'.join(map(str, version[:3]))
-    stage = version[3]
-    if stage == 'final':
-        return number
-    elif stage == 'alpha':
-        process = subprocess.Popen('git rev-parse HEAD'.split(), stdout=subprocess.PIPE)
-        stdout, stderr = process.communicate()
-        return number + '-' + stdout.decode('utf-8').strip()[:8]
 
 setup(
     name='django-authtools',
