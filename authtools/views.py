@@ -215,7 +215,7 @@ class PasswordResetView(CsrfProtectMixin, FormView):
             token_generator=self.token_generator,
             from_email=self.from_email,
             request=self.request,
-            use_https=self.request.is_secure()
+            use_https=self.request.is_secure(),
         )
         return super(PasswordResetView, self).form_valid(form)
 
