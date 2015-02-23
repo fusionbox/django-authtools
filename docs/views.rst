@@ -56,7 +56,8 @@ them after they reset their password.
     .. attribute:: success_url
 
         This replaces the ``post_change_redirect`` parameter present in the
-        built-in function.  Defaults to the 'password_change_done' view.
+        built-in function.  Uses the ``next`` URL parameter or defaults to the
+        'password_change_done' view.
 
 .. class:: PasswordChangeDoneView
 
