@@ -2,8 +2,6 @@
 from setuptools import setup, find_packages
 import os
 
-from authtools.version import get_version
-
 __doc__ = ("Custom user model app for Django featuring email as username and"
            " class-based views for authentication.")
 
@@ -16,10 +14,9 @@ install_requires = [
     'Django>=1.5',
 ]
 
-
 setup(
     name='django-authtools',
-    version=get_version(),
+    version='1.1.0.dev0',
     author='Fusionbox, Inc.',
     author_email='programmers@fusionbox.com',
     description=__doc__,

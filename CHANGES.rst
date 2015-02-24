@@ -1,6 +1,12 @@
 CHANGES
 =======
 
+1.1.0 (unreleased)
+------------------
+
+- Nothing changed yet.
+
+
 1.0.0 (released August 16, 2014)
 --------------------------------
 
