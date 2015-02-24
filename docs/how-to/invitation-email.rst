@@ -88,7 +88,7 @@ Then an admin class that uses our form and sends the email::
                 assert reset_form.is_valid()
                 reset_form.save(
                     request=request,
-                    use_https: request.is_secure(),
+                    use_https=request.is_secure(),
                     subject_template_name='registration/account_creation_subject.txt',
                     email_template_name='registration/account_creation_email.html',
                 )
