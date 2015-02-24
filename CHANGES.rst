@@ -1,11 +1,10 @@
 CHANGES
 =======
 
-1.1.0 (unreleased)
+1.1.0 (2015-02-24)
 ------------------
 
-- Nothing changed yet.
-
+  - PasswordChangeView now handles a ``next`` URL parameter (#24)
 
 1.0.0 (released August 16, 2014)
 --------------------------------
