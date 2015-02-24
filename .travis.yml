@@ -1,12 +1,21 @@
+sudo: false
 language: python
 python:
   - "2.7"
-  - "2.6"
-  - "3.3"
+cache:
+  directories:
+    - $HOME/.pip-cache/
 env:
-  - DJANGO_PACKAGE=https://github.com/django/django/archive/stable/1.5.x.zip
-  - DJANGO_PACKAGE=https://github.com/django/django/archive/stable/1.6.x.zip
+  - TOX_ENV=py26-dj15
+  - TOX_ENV=py26-dj16
+  - TOX_ENV=py27-dj15
+  - TOX_ENV=py27-dj16
+  - TOX_ENV=py33-dj15
+  - TOX_ENV=py33-dj16
 install:
-  - pip install -q $DJANGO_PACKAGE --use-mirrors
-  - python setup.py install
-script: make test
+  - pip install --upgrade pip
+  - pip install tox==1.8.0
+script:
+  - tox -e $TOX_ENV
+after_script:
+  - cat .tox/$TOX_ENV/log/*.log
