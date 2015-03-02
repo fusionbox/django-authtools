@@ -4,9 +4,13 @@ We're able to borrow most of django's auth view tests.
 """
 import itertools
 
+try:
+    from unittest import skipIf, skipUnless
+except ImportError:  # Python < 2.7
+    from django.utils.unittest import skipIf, skipUnless
+
 from django.core import mail
 from django.core.urlresolvers import reverse
-from django.contrib.sites.models import Site, RequestSite
 from django.contrib.auth import REDIRECT_FIELD_NAME, get_user_model
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.tests.utils import skipIfCustomUser
@@ -14,7 +18,6 @@ from django.utils.http import urlquote
 from django.test import TestCase
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
-from django.utils import unittest
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext as _
 from django.forms.fields import Field
@@ -41,6 +44,17 @@ except ImportError:
         LogoutTest,
     )
 
+try:
+    from django.contrib.sites.shortcuts import get_current_site
+except ImportError:  # Django < 1.7
+    def get_current_site(request):
+        from django.contrib.sites.models import Site, RequestSite
+        if Site._meta.installed:
+            return Site.objects.get_current()
+        else:
+            return RequestSite(request)
+
+
 from authtools.admin import BASE_FIELDS
 from authtools.forms import UserCreationForm, UserChangeForm, FriendlyPasswordResetForm
 from authtools.views import PasswordResetCompleteView, resolve_url_lazy
@@ -49,7 +63,7 @@ User = get_user_model()
 
 
 def skipIfNotCustomUser(test_func):
-    return unittest.skipIf(settings.AUTH_USER_MODEL == 'auth.User', 'Built-in User model in use')(test_func)
+    return skipIf(settings.AUTH_USER_MODEL == 'auth.User', 'Built-in User model in use')(test_func)
 
 
 class AuthViewNamedURLTests(AuthViewNamedURLTests):
@@ -173,12 +187,9 @@ class LoginTest(LoginTest):
     def test_current_site_in_context_after_login(self):
         response = self.client.get(reverse('login'))
         self.assertEqual(response.status_code, 200)
-        if Site._meta.installed:
-            site = Site.objects.get_current()
-            self.assertEqual(response.context['site'], site)
-            self.assertEqual(response.context['site_name'], site.name)
-        else:
-            self.assertIsInstance(response.context['site'], RequestSite)
+        site = get_current_site(response.request)
+        self.assertEqual(response.context['site'], site)
+        self.assertEqual(response.context['site_name'], site.name)
         self.assertTrue(isinstance(response.context['form'], AuthenticationForm),
                         'Login form is not an AuthenticationForm')
 
@@ -478,7 +489,7 @@ class UserManagerTest(TestCase):
 
 
 class UserModelTest(TestCase):
-    @unittest.skipUnless(settings.AUTH_USER_MODEL == 'authtools.User',
+    @skipUnless(settings.AUTH_USER_MODEL == 'authtools.User',
                          "only check authuser's ordering")
     def test_default_ordering(self):
         self.assertSequenceEqual(['name', 'email'], User._meta.ordering)
