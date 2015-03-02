@@ -73,7 +73,7 @@ Then an admin class that uses our form and sends the email::
         )
 
         def save_model(self, request, obj, form, change):
-            if not change and not obj.has_usable_password():
+            if not change and (not form.cleaned_data['password1'] or not obj.has_usable_password()):
                 # Django's PasswordResetForm won't let us reset an unusable
                 # password. We set it above super() so we don't have to save twice.
                 obj.set_password(get_random_string())
