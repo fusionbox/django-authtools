@@ -10,10 +10,12 @@ class CaseInsensitiveEmailBackend(ModelBackend):
         # In settings.py
         AUTHENTICATION_BACKENDS = ('authtools.backends.CaseInsensitiveEmailBackend',)
     """
-    def authenticate(self, username=None, password=None):
-        username = username.lower()
+    def authenticate(self, username=None, password=None, **kwargs):
+        if username is not None:
+            username = username.lower()
 
         return super(CaseInsensitiveEmailBackend, self).authenticate(
             username=username,
-            password=password
+            password=password,
+            **kwargs
         )
