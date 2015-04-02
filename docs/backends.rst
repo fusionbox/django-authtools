@@ -15,7 +15,9 @@ for how your :class:`authtool.models.User` class is authenticated.
     .. warning:
         Use of this mixin presupposes that all usernames are stored in their lowercase form, and
         that there is no way to have usernames differing only in case. If usernames can differ in
-        case, this authentication backend mixin could cause errors in user authentication.
+        case, this authentication backend mixin could cause errors in user authentication. It is
+        advised that you use this mixin in conjuction with the
+        ``CaseInsensitiveEmailUserCreationForm`` form provided in the ``forms`` module.
 
 .. class:: CaseInsensitiveEmailModelBackend
     A subclass of the ``CaseInsentiveEmailBackendMixin`` with

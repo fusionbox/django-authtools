@@ -16,7 +16,7 @@ class CaseInsensitiveEmailBackendMixin(object):
             A word of caution. Use of this backend presupposes a way to ensure that users cannot
             create usernames that differ only in case (e.g., joe@test.org and JOE@test.org). It is
             advised that you use this backend in conjunction with the
-            EmailInsensitiveCreateUserForm provided in the forms module.
+            CaseInsensitiveEmailUserCreationForm provided in the forms module.
         """
         if username is not None:
             username = username.lower()
