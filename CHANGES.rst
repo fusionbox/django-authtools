@@ -1,7 +1,7 @@
 CHANGES
 =======
 
-1.2.0 (unreleased)
+1.2.0 (2015-04-02)
 ------------------
 
 - Nothing changed yet.
