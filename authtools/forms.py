@@ -103,6 +103,20 @@ class UserCreationForm(forms.ModelForm):
         return user
 
 
+class CaseInsensitiveEmailUserCreationForm(UserCreationForm):
+    """
+    This form is the same as UserCreationForm, except that usernames are lowercased before they
+    are saved. This is to disallow the existence of email address uernames which differ only in
+    case.
+    """
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if username:
+            username = username.lower()
+
+        return username
+
+
 class UserChangeForm(forms.ModelForm):
     """
     A form for updating users. Includes all the fields on
