@@ -21,7 +21,8 @@ Releases
 The process for releases is the same regardless of whether it's a patch, minor,
 or major release. It is as follows.
 
-1. Add the changes to ``CHANGES.rst``. Don't commit.
+1. Add the changes to ``CHANGES.rst``. Don't commit. NOTE: You do not have to replace "(unreleased)"
+   with the desired release date; zest.releaser will do this automatically.
 2. Run the ``longtest`` command to make sure that the ``README.rst`` and
    ``CHANGES.rst`` files are valid.
 3. Commit changes with a commit message like "CHANGES for 1.1.0".
