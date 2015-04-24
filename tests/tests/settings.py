@@ -10,6 +10,7 @@ INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.admin',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'tests',
     'authtools',
 )
