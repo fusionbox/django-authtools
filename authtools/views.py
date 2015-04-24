@@ -11,7 +11,10 @@ from django.contrib.auth.forms import (AuthenticationForm, SetPasswordForm,
                                        PasswordChangeForm, PasswordResetForm)
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib import auth
-from django.contrib.sites.models import get_current_site
+try:
+    from django.contrib.sites.shortcuts import get_current_site
+except ImportError:
+    from django.contrib.sites.models import get_current_site  # Django < 1.7
 from django.core.urlresolvers import reverse_lazy
 from django.shortcuts import redirect, resolve_url
 from django.utils.functional import lazy

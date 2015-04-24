@@ -3,6 +3,7 @@ from __future__ import print_function
 import os
 
 SECRET_KEY = 'w6bidenrf5q%byf-q82b%pli50i0qmweus6gt_3@k$=zg7ymd3'
+SITE_ID = 1
 
 INSTALLED_APPS = (
     'django.contrib.sessions',
