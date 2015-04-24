@@ -10,6 +10,23 @@ CHANGES
 - **Backwards Incompatible** ``LoginView.disallow_authenticated`` was changed to ``LoginView.allow_authenticated``
 - **Backwards Incompatible** ``LoginView.allow_authenticated`` is ``True`` by default (which is the default behavior in Django)
 
+If your ``login.html`` template looks like this:
+
+.. code:: html
+
+    <form method="post" action="{% url 'login' %}">
+        <input type="hidden" name="next" value="{{ next }}">
+        <label>Login: <input type="text" name="login"></label>
+        <!-- ... -->
+
+You should replace it by:
+
+.. code:: html
+    <form method="post">
+        <label>Login: <input type="text" name="login"></label>
+        <!-- ... -->
+
+Since the current URL of the page already contains ``next`` in its querystring.
 
 1.2.0 (2015-04-02)
 ------------------
