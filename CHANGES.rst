@@ -1,10 +1,14 @@
 CHANGES
 =======
 
-1.2.1 (unreleased)
+1.3.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Added Django 1.7 compatibility (Antoine Catton, Rocky Meza, #35)
+- **Backwards Incompatible** Can't pass the ``next`` URL as a POST parameter
+  - ``next`` should be only passed in the querystring (as a GET parameter)
+- **Backwards Incompatible** ``LoginView.disallow_authenticated`` was changed to ``LoginView.allow_authenticated``
+- **Backwards Incompatible** ``LoginView.allow_authenticated`` is ``True`` by default (which is the default behavior in Django)
 
 
 1.2.0 (2015-04-02)
