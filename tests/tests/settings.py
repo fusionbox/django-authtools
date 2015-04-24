@@ -21,6 +21,14 @@ DATABASES = {
     }
 }
 
+# This comes from django@1.7#tests/runtests.py
+# This ignores migrations on auth and contenttypes apps
+# (because these modules don't exist)
+MIGRATION_MODULES = {
+    'auth': 'django.contrib.auth.tests.migrations',
+    'contenttypes': 'django.contrib.contenttypes.tests.migrations',
+}
+
 ROOT_URLCONF = 'tests.urls'
 
 STATIC_URL = '/static/'
