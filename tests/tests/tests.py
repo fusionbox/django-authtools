@@ -47,12 +47,7 @@ except ImportError:
 try:
     from django.contrib.sites.shortcuts import get_current_site
 except ImportError:  # Django < 1.7
-    def get_current_site(request):
-        from django.contrib.sites.models import Site, RequestSite
-        if Site._meta.installed:
-            return Site.objects.get_current()
-        else:
-            return RequestSite(request)
+    from django.contrib.sites.models import get_current_site
 
 
 from authtools.admin import BASE_FIELDS
