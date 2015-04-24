@@ -29,5 +29,7 @@ urlpatterns += patterns('',
         PasswordResetView.as_view(form_class=FriendlyPasswordResetForm),
         name='friendly_password_reset'),
     url('^login_required/$', login_required(dumbview), name='login_required'),
+    # From django.contrib.auth.tests.url
+    url('^password_reset/html_email_template/$', 'django.contrib.auth.views.password_reset', dict(html_email_template_name='registration/html_password_reset_email.html')),
     url('^', include('authtools.urls')),
 )
