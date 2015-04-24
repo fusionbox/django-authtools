@@ -124,11 +124,11 @@ class AuthDecoratorsMixin(NeverCacheMixin, CsrfProtectMixin, SensitivePostParame
 class LoginView(AuthDecoratorsMixin, WithCurrentSiteMixin, WithNextUrlMixin, FormView):
     form_class = AuthenticationForm
     template_name = 'registration/login.html'
-    disallow_authenticated = True
+    allow_authenticated = True
     success_url = resolve_url_lazy(settings.LOGIN_REDIRECT_URL)
 
     def dispatch(self, *args, **kwargs):
-        if self.disallow_authenticated and self.request.user.is_authenticated():
+        if not self.allow_authenticated and self.request.user.is_authenticated():
             return redirect(self.get_success_url())
         return super(LoginView, self).dispatch(*args, **kwargs)
 
