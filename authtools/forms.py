@@ -31,7 +31,10 @@ class BetterReadOnlyPasswordHashWidget(ReadOnlyPasswordHashWidget):
     A ReadOnlyPasswordHashWidget that has a less intimidating output.
     """
     def render(self, name, value, attrs):
-        from django.forms.util import flatatt
+        try:
+            from django.forms.utils import flatatt
+        except ImportError:
+            from django.forms.util import flatatt  # Django < 1.7
         final_attrs = flatatt(self.build_attrs(attrs))
 
         if not value or not is_password_usable(value):
