@@ -5,9 +5,9 @@ We're able to borrow most of django's auth view tests.
 import itertools
 
 try:
-    import unittest
+    from unittest import skipIf, skipUnless
 except ImportError:  # Python < 2.7
-    from django.utils import unittest
+    from django.utils.unittest import skipIf, skipUnless
 
 from django.core import mail
 from django.core.urlresolvers import reverse
@@ -63,7 +63,7 @@ User = get_user_model()
 
 
 def skipIfNotCustomUser(test_func):
-    return unittest.skipIf(settings.AUTH_USER_MODEL == 'auth.User', 'Built-in User model in use')(test_func)
+    return skipIf(settings.AUTH_USER_MODEL == 'auth.User', 'Built-in User model in use')(test_func)
 
 
 class AuthViewNamedURLTests(AuthViewNamedURLTests):
@@ -489,8 +489,8 @@ class UserManagerTest(TestCase):
 
 
 class UserModelTest(TestCase):
-    @unittest.skipUnless(settings.AUTH_USER_MODEL == 'authtools.User',
-                            "only check authuser's ordering")
+    @skipUnless(settings.AUTH_USER_MODEL == 'authtools.User',
+                         "only check authuser's ordering")
     def test_default_ordering(self):
         self.assertSequenceEqual(['name', 'email'], User._meta.ordering)
 
