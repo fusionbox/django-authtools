@@ -64,8 +64,8 @@ class WithNextUrlMixin(object):
     success_url = None
 
     def get_next_url(self):
-        if self.redirect_field_name in self.request.REQUEST:
-            redirect_to = self.request.REQUEST[self.redirect_field_name]
+        if self.redirect_field_name in self.request.GET:
+            redirect_to = self.request.GET[self.redirect_field_name]
             if is_safe_url(redirect_to, host=self.request.get_host()):
                 return redirect_to
 
@@ -139,7 +139,7 @@ class LoginView(AuthDecoratorsMixin, WithCurrentSiteMixin, WithNextUrlMixin, For
     def get_context_data(self, **kwargs):
         kwargs = super(LoginView, self).get_context_data(**kwargs)
         kwargs.update({
-            self.redirect_field_name: self.request.REQUEST.get(
+            self.redirect_field_name: self.request.GET.get(
                 self.redirect_field_name, '',
             ),
         })
