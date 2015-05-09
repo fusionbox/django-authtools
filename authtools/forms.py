@@ -106,7 +106,7 @@ class UserCreationForm(forms.ModelForm):
 class CaseInsensitiveEmailUserCreationForm(UserCreationForm):
     """
     This form is the same as UserCreationForm, except that usernames are lowercased before they
-    are saved. This is to disallow the existence of email address uernames which differ only in
+    are saved. This is to disallow the existence of email address usernames which differ only in
     case.
     """
     def clean_username(self):
