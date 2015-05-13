@@ -4,7 +4,13 @@ CHANGES
 1.2.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+ - Create migrations for authtools.
+
+   If updating from an older authtools, these migrations must be run on your apps::
+
+     $ python manage.py migrate --fake authtools 0001_initial
+
+     $ python manage.py migrate
 
 
 1.2.0 (2015-04-02)
