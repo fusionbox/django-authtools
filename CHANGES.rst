@@ -20,6 +20,7 @@ CHANGES
   You should replace it with:
 
   .. code:: html
+
     <form method="post">
         <label>Login: <input type="text" name="login"></label>
         <!-- ... -->
@@ -29,7 +30,7 @@ CHANGES
 - **Backwards Incompatible:** ``LoginView.disallow_authenticated`` was changed to ``LoginView.allow_authenticated``
 
   If you were using ``disallow_authenticated=True`` anywhere and want to keep that behavior, you will have to change it to
-  `'allow_authenticated=False``.
+  ``allow_authenticated=False``.
 
 - **Backwards Incompatible:** ``LoginView.allow_authenticated`` is ``True`` by default (which is the default behavior in Django)
 
