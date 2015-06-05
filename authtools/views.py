@@ -65,10 +65,14 @@ class WithNextUrlMixin(object):
     success_url = None
 
     def get_next_url(self):
-        if self.redirect_field_name in self.request.GET:
-            redirect_to = self.request.GET[self.redirect_field_name]
-            if is_safe_url(redirect_to, host=self.request.get_host()):
-                return redirect_to
+        request = self.request
+        redirect_to = request.POST.get(self.redirect_field_name,
+                                       request.GET.get(self.redirect_field_name, ''))
+        if not redirect_to:
+            return
+
+        if is_safe_url(redirect_to, host=self.request.get_host()):
+            return redirect_to
 
     # This mixin can be mixed with FormViews and RedirectViews. They
     # each use a different method to get the URL to redirect to, so we
