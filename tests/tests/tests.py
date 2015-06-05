@@ -2,7 +2,10 @@
 We're able to borrow most of django's auth view tests.
 
 """
+import collections
+import contextlib
 import itertools
+import warnings
 
 try:
     from unittest import skipIf, skipUnless
@@ -22,6 +25,8 @@ from django.utils.encoding import force_text
 from django.utils.translation import ugettext as _
 from django.forms.fields import Field
 from django.conf import settings
+
+from authtools.views import LoginView
 
 try:
     # Django 1.6
@@ -59,6 +64,20 @@ User = get_user_model()
 
 def skipIfNotCustomUser(test_func):
     return skipIf(settings.AUTH_USER_MODEL == 'auth.User', 'Built-in User model in use')(test_func)
+
+
+class WarningTestMixin(object):
+    @contextlib.contextmanager
+    def assertWarns(self, warning_classes):
+        if not isinstance(warning_classes, collections.Iterable):
+            warning_classes = [warning_classes]
+
+        with warnings.catch_warnings(record=True) as warn:
+            warnings.simplefilter("always")
+            yield
+            assert len(warn) == len(warning_classes)
+            for msg, expected_class in zip(warn, warning_classes):
+                assert issubclass(msg.category, expected_class)
 
 
 class AuthViewNamedURLTests(AuthViewNamedURLTests):
@@ -229,6 +248,26 @@ class LoginTest(LoginTest):
             self.assertEqual(response.status_code, 302)
             self.assertTrue(good_url in response['Location'],
                             "%s should be allowed" % good_url)
+
+
+class DeprecationTest(WarningTestMixin, TestCase):
+
+    def test_disallow_authenticated_is_deprecated_on_login_view(self):
+        with self.assertWarns(DeprecationWarning):
+            class CustomLoginView(LoginView):
+                disallow_authenticated = False
+
+            view = CustomLoginView()
+            assert view.get_allow_authenticated()
+
+        with self.assertWarns(DeprecationWarning):
+
+            # Simulate LoginView.as_view(disallow_authenticated=False) behavior
+            view = LoginView()
+            view.disallow_authenticated = False
+
+            assert view.get_allow_authenticated()
+
 
 
 class LoginURLSettings(LoginURLSettings):

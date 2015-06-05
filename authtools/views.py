@@ -3,6 +3,7 @@ Mostly equivalent to the views from django.contrib.auth.views, but
 implemented as class-based views.
 """
 from __future__ import unicode_literals
+import warnings
 
 from django.conf import settings
 from django.contrib.auth import get_user_model, REDIRECT_FIELD_NAME
@@ -127,8 +128,20 @@ class LoginView(AuthDecoratorsMixin, WithCurrentSiteMixin, WithNextUrlMixin, For
     allow_authenticated = True
     success_url = resolve_url_lazy(settings.LOGIN_REDIRECT_URL)
 
+    # BBB: This is deprecated (See LoginView.get_allow_authenticated)
+    disallow_authenticated = None
+
+    def get_allow_authenticated(self):
+        if self.disallow_authenticated is not None:
+            warnings.warn("disallow_authenticated is deprecated. Please use allow_authenticated",
+                          DeprecationWarning)
+            return not self.disallow_authenticated
+        else:
+            return self.allow_authenticated
+
     def dispatch(self, *args, **kwargs):
-        if not self.allow_authenticated and self.request.user.is_authenticated():
+        allow_authenticated = self.get_allow_authenticated()
+        if not allow_authenticated and self.request.user.is_authenticated():
             return redirect(self.get_success_url())
         return super(LoginView, self).dispatch(*args, **kwargs)
 

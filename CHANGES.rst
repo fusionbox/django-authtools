@@ -27,12 +27,10 @@ CHANGES
 
   This works because the current URL of the page already contains ``next`` in its querystring.
 
-- **Backwards Incompatible:** ``LoginView.disallow_authenticated`` was changed to ``LoginView.allow_authenticated``
-
-  If you were using ``disallow_authenticated=True`` anywhere and want to keep that behavior, you will have to change it to
-  ``allow_authenticated=False``.
-
-- **Backwards Incompatible:** ``LoginView.allow_authenticated`` is ``True`` by default (which is the default behavior in Django)
+- ``LoginView.disallow_authenticated`` was changed to ``LoginView.allow_authenticated``
+- ``LoginView.disallow_authenticated`` was deprecated.
+- **Backwards Incompatible:** ``LoginView.allow_authenticated`` is now ``True``
+  by default (which is the default behavior in Django)
 
 1.2.0 (2015-04-02)
 ------------------
