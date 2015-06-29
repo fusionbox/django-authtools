@@ -2,11 +2,18 @@
 We're able to borrow most of django's auth view tests.
 
 """
+import collections
+import contextlib
 import itertools
+import warnings
+
+try:
+    from unittest import skipIf, skipUnless
+except ImportError:  # Python < 2.7
+    from django.utils.unittest import skipIf, skipUnless
 
 from django.core import mail
 from django.core.urlresolvers import reverse
-from django.contrib.sites.models import Site, RequestSite
 from django.contrib.auth import REDIRECT_FIELD_NAME, get_user_model
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.tests.utils import skipIfCustomUser
@@ -14,11 +21,12 @@ from django.utils.http import urlquote
 from django.test import TestCase
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
-from django.utils import unittest
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext as _
 from django.forms.fields import Field
 from django.conf import settings
+
+from authtools.views import LoginView
 
 try:
     # Django 1.6
@@ -41,6 +49,12 @@ except ImportError:
         LogoutTest,
     )
 
+try:
+    from django.contrib.sites.shortcuts import get_current_site
+except ImportError:  # Django < 1.7
+    from django.contrib.sites.models import get_current_site
+
+
 from authtools.admin import BASE_FIELDS
 from authtools.forms import UserCreationForm, UserChangeForm, FriendlyPasswordResetForm
 from authtools.views import PasswordResetCompleteView, resolve_url_lazy
@@ -49,7 +63,21 @@ User = get_user_model()
 
 
 def skipIfNotCustomUser(test_func):
-    return unittest.skipIf(settings.AUTH_USER_MODEL == 'auth.User', 'Built-in User model in use')(test_func)
+    return skipIf(settings.AUTH_USER_MODEL == 'auth.User', 'Built-in User model in use')(test_func)
+
+
+class WarningTestMixin(object):
+    @contextlib.contextmanager
+    def assertWarns(self, warning_classes):
+        if not isinstance(warning_classes, collections.Iterable):
+            warning_classes = [warning_classes]
+
+        with warnings.catch_warnings(record=True) as warn:
+            warnings.simplefilter("always")
+            yield
+            assert len(warn) == len(warning_classes)
+            for msg, expected_class in zip(warn, warning_classes):
+                assert issubclass(msg.category, expected_class)
 
 
 class AuthViewNamedURLTests(AuthViewNamedURLTests):
@@ -173,12 +201,9 @@ class LoginTest(LoginTest):
     def test_current_site_in_context_after_login(self):
         response = self.client.get(reverse('login'))
         self.assertEqual(response.status_code, 200)
-        if Site._meta.installed:
-            site = Site.objects.get_current()
-            self.assertEqual(response.context['site'], site)
-            self.assertEqual(response.context['site_name'], site.name)
-        else:
-            self.assertIsInstance(response.context['site'], RequestSite)
+        site = get_current_site(response.request)
+        self.assertEqual(response.context['site'], site)
+        self.assertEqual(response.context['site_name'], site.name)
         self.assertTrue(isinstance(response.context['form'], AuthenticationForm),
                         'Login form is not an AuthenticationForm')
 
@@ -223,6 +248,26 @@ class LoginTest(LoginTest):
             self.assertEqual(response.status_code, 302)
             self.assertTrue(good_url in response['Location'],
                             "%s should be allowed" % good_url)
+
+
+class DeprecationTest(WarningTestMixin, TestCase):
+
+    def test_disallow_authenticated_is_deprecated_on_login_view(self):
+        with self.assertWarns(DeprecationWarning):
+            class CustomLoginView(LoginView):
+                disallow_authenticated = False
+
+            view = CustomLoginView()
+            assert view.get_allow_authenticated()
+
+        with self.assertWarns(DeprecationWarning):
+
+            # Simulate LoginView.as_view(disallow_authenticated=False) behavior
+            view = LoginView()
+            view.disallow_authenticated = False
+
+            assert view.get_allow_authenticated()
+
 
 
 class LoginURLSettings(LoginURLSettings):
@@ -478,7 +523,7 @@ class UserManagerTest(TestCase):
 
 
 class UserModelTest(TestCase):
-    @unittest.skipUnless(settings.AUTH_USER_MODEL == 'authtools.User',
+    @skipUnless(settings.AUTH_USER_MODEL == 'authtools.User',
                          "only check authuser's ordering")
     def test_default_ordering(self):
         self.assertSequenceEqual(['name', 'email'], User._meta.ordering)

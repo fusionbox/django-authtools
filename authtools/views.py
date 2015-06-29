@@ -3,6 +3,7 @@ Mostly equivalent to the views from django.contrib.auth.views, but
 implemented as class-based views.
 """
 from __future__ import unicode_literals
+import warnings
 
 from django.conf import settings
 from django.contrib.auth import get_user_model, REDIRECT_FIELD_NAME
@@ -11,7 +12,10 @@ from django.contrib.auth.forms import (AuthenticationForm, SetPasswordForm,
                                        PasswordChangeForm, PasswordResetForm)
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib import auth
-from django.contrib.sites.models import get_current_site
+try:
+    from django.contrib.sites.shortcuts import get_current_site
+except ImportError:
+    from django.contrib.sites.models import get_current_site  # Django < 1.7
 from django.core.urlresolvers import reverse_lazy
 from django.shortcuts import redirect, resolve_url
 from django.utils.functional import lazy
@@ -61,10 +65,14 @@ class WithNextUrlMixin(object):
     success_url = None
 
     def get_next_url(self):
-        if self.redirect_field_name in self.request.REQUEST:
-            redirect_to = self.request.REQUEST[self.redirect_field_name]
-            if is_safe_url(redirect_to, host=self.request.get_host()):
-                return redirect_to
+        request = self.request
+        redirect_to = request.POST.get(self.redirect_field_name,
+                                       request.GET.get(self.redirect_field_name, ''))
+        if not redirect_to:
+            return
+
+        if is_safe_url(redirect_to, host=self.request.get_host()):
+            return redirect_to
 
     # This mixin can be mixed with FormViews and RedirectViews. They
     # each use a different method to get the URL to redirect to, so we
@@ -121,11 +129,23 @@ class AuthDecoratorsMixin(NeverCacheMixin, CsrfProtectMixin, SensitivePostParame
 class LoginView(AuthDecoratorsMixin, WithCurrentSiteMixin, WithNextUrlMixin, FormView):
     form_class = AuthenticationForm
     template_name = 'registration/login.html'
-    disallow_authenticated = True
+    allow_authenticated = True
     success_url = resolve_url_lazy(settings.LOGIN_REDIRECT_URL)
 
+    # BBB: This is deprecated (See LoginView.get_allow_authenticated)
+    disallow_authenticated = None
+
+    def get_allow_authenticated(self):
+        if self.disallow_authenticated is not None:
+            warnings.warn("disallow_authenticated is deprecated. Please use allow_authenticated",
+                          DeprecationWarning)
+            return not self.disallow_authenticated
+        else:
+            return self.allow_authenticated
+
     def dispatch(self, *args, **kwargs):
-        if self.disallow_authenticated and self.request.user.is_authenticated():
+        allow_authenticated = self.get_allow_authenticated()
+        if not allow_authenticated and self.request.user.is_authenticated():
             return redirect(self.get_success_url())
         return super(LoginView, self).dispatch(*args, **kwargs)
 
@@ -136,7 +156,7 @@ class LoginView(AuthDecoratorsMixin, WithCurrentSiteMixin, WithNextUrlMixin, For
     def get_context_data(self, **kwargs):
         kwargs = super(LoginView, self).get_context_data(**kwargs)
         kwargs.update({
-            self.redirect_field_name: self.request.REQUEST.get(
+            self.redirect_field_name: self.request.GET.get(
                 self.redirect_field_name, '',
             ),
         })

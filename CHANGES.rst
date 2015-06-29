@@ -1,11 +1,14 @@
 CHANGES
 =======
 
-1.2.1 (unreleased)
+1.3.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
-
+- Added Django 1.7 compatibility (Antoine Catton, Rocky Meza, #35)
+- ``LoginView.disallow_authenticated`` was changed to ``LoginView.allow_authenticated``
+- ``LoginView.disallow_authenticated`` was deprecated.
+- **Backwards Incompatible:** ``LoginView.allow_authenticated`` is now ``True``
+  by default (which is the default behavior in Django)
 
 1.2.0 (2015-04-02)
 ------------------
