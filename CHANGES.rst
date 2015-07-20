@@ -9,6 +9,14 @@ CHANGES
 - ``LoginView.disallow_authenticated`` was deprecated.
 - **Backwards Incompatible:** ``LoginView.allow_authenticated`` is now ``True``
   by default (which is the default behavior in Django)
+- Create migrations for authtools.
+
+  If updating from an older authtools, these migrations must be run on your apps::
+
+    $ python manage.py migrate --fake authtools 0001_initial
+
+    $ python manage.py migrate
+
 
 1.2.0 (2015-04-02)
 ------------------
@@ -56,7 +64,7 @@ CHANGES
   this URL. Rather than using a separate view for each encoding, authtools uses
   `a single view
   <https://django-authtools.readthedocs.org/en/latest/views.html#authtools.views.PasswordResetConfirmView>`_
-  that works with both
+  that works with both.
 
 - Bugfix: if LOGIN_URL was a URL name, it wasn't being reversed in the
   PasswordResetConfirmView.
