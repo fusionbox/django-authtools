@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
-import os
+import os, io
 
 __doc__ = ("Custom user model app for Django featuring email as username and"
            " class-based views for authentication.")
 
 
 def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
+    return io.open(os.path.join(os.path.dirname(__file__), fname), encoding="utf-8").read()
 
 
 install_requires = [
