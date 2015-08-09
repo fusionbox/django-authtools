@@ -12,7 +12,7 @@ Installation
 
     Or you can install it from source::
 
-        $ pip install -e git://github.com/fusionbox/django-authtools@master#egg=django-authtools-dev
+        $ pip install -e git+http://github.com/fusionbox/django-authtools@master#egg=django-authtools-dev
 
 2.  Run the authtools migrations::
 
