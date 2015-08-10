@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
-import os, io
+import os
+import io
 
 __doc__ = ("Custom user model app for Django featuring email as username and"
            " class-based views for authentication.")
