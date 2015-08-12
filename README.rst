@@ -1,5 +1,5 @@
 django-authtools
-----------------
+================
 
 .. image:: https://travis-ci.org/fusionbox/django-authtools.png
    :target: http://travis-ci.org/fusionbox/django-authtools
