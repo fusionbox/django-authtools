@@ -226,8 +226,13 @@ class PasswordResetView(CsrfProtectMixin, FormView):
     email_template_name = 'registration/password_reset_email.html'
     from_email = None
     form_class = PasswordResetForm
+    html_email_template_name = None
 
     def form_valid(self, form):
+        kwargs = {}
+        # html_email_template_name is not available in < django 1.7
+        if self.html_email_template_name:
+            kwargs['html_email_template_name'] = self.html_email_template_name
         form.save(
             domain_override=self.domain_override,
             subject_template_name=self.subject_template_name,
@@ -236,6 +241,7 @@ class PasswordResetView(CsrfProtectMixin, FormView):
             from_email=self.from_email,
             request=self.request,
             use_https=self.request.is_secure(),
+            **kwargs
         )
         return super(PasswordResetView, self).form_valid(form)
 
