@@ -28,31 +28,16 @@ from django.conf import settings
 
 from authtools.views import LoginView
 
-try:
-    # Django 1.6
-    from django.contrib.auth.tests.test_views import (
-        AuthViewNamedURLTests,
-        PasswordResetTest,
-        ChangePasswordTest,
-        LoginTest,
-        LoginURLSettings,
-        LogoutTest,
-    )
-except ImportError:
-    # Django 1.5
-    from django.contrib.auth.tests.views import (
-        AuthViewNamedURLTests,
-        PasswordResetTest,
-        ChangePasswordTest,
-        LoginTest,
-        LoginURLSettings,
-        LogoutTest,
-    )
+from auth_tests.test_views import (
+    AuthViewNamedURLTests,
+    PasswordResetTest,
+    ChangePasswordTest,
+    LoginTest,
+    LoginURLSettings,
+    LogoutTest,
+)
 
-try:
-    from django.contrib.sites.shortcuts import get_current_site
-except ImportError:  # Django < 1.7
-    from django.contrib.sites.models import get_current_site
+from django.contrib.sites.shortcuts import get_current_site
 
 
 from authtools.admin import BASE_FIELDS
