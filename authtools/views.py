@@ -224,6 +224,7 @@ class PasswordResetView(CsrfProtectMixin, FormView):
     domain_override = None
     subject_template_name = 'registration/password_reset_subject.txt'
     email_template_name = 'registration/password_reset_email.html'
+    html_email_template_name = None
     from_email = None
     form_class = PasswordResetForm
 
@@ -236,6 +237,7 @@ class PasswordResetView(CsrfProtectMixin, FormView):
             from_email=self.from_email,
             request=self.request,
             use_https=self.request.is_secure(),
+            html_email_template_name=self.html_email_template_name,
         )
         return super(PasswordResetView, self).form_valid(form)
 
