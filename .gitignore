@@ -7,3 +7,4 @@ tests/htmlcov/
 dist/
 build/
 .tox
+/django.tar.gz
