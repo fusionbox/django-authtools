@@ -26,8 +26,6 @@ from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import FormView, TemplateView, RedirectView
 
-from authtools.forms import FriendlyPasswordResetForm
-
 
 User = get_user_model()
 
@@ -162,8 +160,6 @@ class LoginView(AuthDecoratorsMixin, WithCurrentSiteMixin, WithNextUrlMixin, For
         })
         return kwargs
 
-login = LoginView.as_view()
-
 
 class LogoutView(NeverCacheMixin, WithCurrentSiteMixin, WithNextUrlMixin, TemplateView, RedirectView):
     template_name = 'registration/logged_out.html'
@@ -176,11 +172,6 @@ class LogoutView(NeverCacheMixin, WithCurrentSiteMixin, WithNextUrlMixin, Templa
             return RedirectView.get(self, *args, **kwargs)
         else:
             return TemplateView.get(self, *args, **kwargs)
-
-logout = LogoutView.as_view()
-logout_then_login = LogoutView.as_view(
-    url=reverse_lazy('login')
-)
 
 
 class PasswordChangeView(LoginRequiredMixin, WithNextUrlMixin, AuthDecoratorsMixin, FormView):
@@ -200,21 +191,17 @@ class PasswordChangeView(LoginRequiredMixin, WithNextUrlMixin, AuthDecoratorsMix
         form.save()
         return super(PasswordChangeView, self).form_valid(form)
 
-password_change = PasswordChangeView.as_view()
-
 
 class PasswordChangeDoneView(LoginRequiredMixin, TemplateView):
     template_name = 'registration/password_change_done.html'
 
-password_change_done = PasswordChangeDoneView.as_view()
-
 
 # 4 views for password reset:
-# - password_reset sends the mail
-# - password_reset_done shows a success message for the above
-# - password_reset_confirm checks the link the user clicked and
+# - PasswordResetView sends the mail
+# - PasswordResetDoneView shows a success message for the above
+# - PasswordResetConfirmView checks the link the user clicked and
 #   prompts for a new password
-# - password_reset_complete shows a success message for the above
+# - PasswordResetCompleteView shows a success message for the above
 
 
 class PasswordResetView(CsrfProtectMixin, FormView):
@@ -241,16 +228,9 @@ class PasswordResetView(CsrfProtectMixin, FormView):
         )
         return super(PasswordResetView, self).form_valid(form)
 
-password_reset = PasswordResetView.as_view()
-friendly_password_reset = PasswordResetView.as_view(
-    form_class=FriendlyPasswordResetForm
-)
-
 
 class PasswordResetDoneView(TemplateView):
     template_name = 'registration/password_reset_done.html'
-
-password_reset_done = PasswordResetDoneView.as_view()
 
 
 class PasswordResetConfirmView(AuthDecoratorsMixin, FormView):
@@ -311,13 +291,6 @@ class PasswordResetConfirmView(AuthDecoratorsMixin, FormView):
         return form.save()
 
 
-password_reset_confirm = PasswordResetConfirmView.as_view()
-
-# Django 1.6 added this as a temporary shim, see #14881. Since our view
-# works with base 36 or base 64, we can use the same view for both.
-password_reset_confirm_uidb36 = PasswordResetConfirmView.as_view()
-
-
 class PasswordResetConfirmAndLoginView(PasswordResetConfirmView):
     success_url = resolve_url_lazy(settings.LOGIN_REDIRECT_URL)
 
@@ -327,8 +300,6 @@ class PasswordResetConfirmAndLoginView(PasswordResetConfirmView):
                                  password=form.cleaned_data['new_password1'])
         auth.login(self.request, user)
         return ret
-
-password_reset_confirm_and_login = PasswordResetConfirmAndLoginView.as_view()
 
 
 class PasswordResetCompleteView(TemplateView):
@@ -342,5 +313,3 @@ class PasswordResetCompleteView(TemplateView):
         kwargs = super(PasswordResetCompleteView, self).get_context_data(**kwargs)
         kwargs['login_url'] = self.get_login_url()
         return kwargs
-
-password_reset_complete = PasswordResetCompleteView.as_view()
