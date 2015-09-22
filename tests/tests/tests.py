@@ -80,8 +80,9 @@ class WarningTestMixin(object):
                 assert issubclass(msg.category, expected_class)
 
 
+@override_settings(ROOT_URLCONF='authtools.urls')
 class AuthViewNamedURLTests(AuthViewNamedURLTests):
-    urls = 'authtools.urls'
+    pass
 
 
 class UtilsTest(TestCase):
@@ -89,8 +90,8 @@ class UtilsTest(TestCase):
         self.assertTrue(resolve_url_lazy(u'/'))
 
 
+@override_settings(ROOT_URLCONF='tests.urls')
 class PasswordResetTest(PasswordResetTest):
-    urls = 'tests.urls'
 
     # these use custom, test-specific urlpatterns that we don't have
     test_admin_reset = None
@@ -173,8 +174,8 @@ class PasswordResetTest(PasswordResetTest):
         self.assertEqual(response.status_code, 200)
 
 
+@override_settings(ROOT_URLCONF='authtools.urls')
 class ChangePasswordTest(ChangePasswordTest):
-    urls = 'authtools.urls'
 
     test_password_change_redirect_custom = None
     test_password_change_redirect_custom_named = None
@@ -193,8 +194,8 @@ class ChangePasswordTest(ChangePasswordTest):
         self.login(password='password1')
 
 
+@override_settings(ROOT_URLCONF='authtools.urls')
 class LoginTest(LoginTest):
-    urls = 'authtools.urls'
 
     # the built-in tests depend on the django urlpatterns (they reverse
     # django.contrib.auth.views.login)
@@ -270,12 +271,13 @@ class DeprecationTest(WarningTestMixin, TestCase):
 
 
 
+@override_settings(ROOT_URLCONF='tests.urls')
 class LoginURLSettings(LoginURLSettings):
-    urls = 'tests.urls'
+    pass
 
 
+@override_settings(ROOT_URLCONF='tests.urls')
 class LogoutTest(LogoutTest):
-    urls = 'tests.urls'
 
     test_logout_with_overridden_redirect_url = None
     test_logout_with_next_page_specified = None
