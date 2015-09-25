@@ -29,6 +29,13 @@ from django.views.generic import FormView, TemplateView, RedirectView
 from authtools.forms import FriendlyPasswordResetForm
 
 
+try:
+    from django.contrib.auth import update_session_auth_hash
+except ImportError:
+    # Django < 1.7
+    def update_session_auth_hash(request, user):
+        pass
+
 User = get_user_model()
 
 
@@ -198,6 +205,11 @@ class PasswordChangeView(LoginRequiredMixin, WithNextUrlMixin, AuthDecoratorsMix
 
     def form_valid(self, form):
         form.save()
+        # Updating the password logs out all other sessions for the user
+        # except the current one if
+        # django.contrib.auth.middleware.SessionAuthenticationMiddleware
+        # is enabled.
+        update_session_auth_hash(self.request, form.user)
         return super(PasswordChangeView, self).form_valid(form)
 
 password_change = PasswordChangeView.as_view()
