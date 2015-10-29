@@ -8,13 +8,13 @@ DJANGO_CHECKSUM=42c8f39e1542db11fa057be3da68b3126c3f639a76eb2ea8733faed0ae0f650d
 
 test: test-builtin test-authtools test-customuser
 
-test-builtin:
+test-builtin: tests/auth_tests
 	cd tests && DJANGO_SETTINGS_MODULE=$(SETTINGS) $(COVERAGE_COMMAND) ./manage.py test --traceback $(TESTS) --verbosity=2
 
-test-authtools:
+test-authtools: tests/auth_tests
 	+AUTH_USER_MODEL='authtools.User' make test-builtin
 
-test-customuser:
+test-customuser: tests/auth_tests
 	+AUTH_USER_MODEL='tests.User' make test-builtin
 
 coverage:
@@ -28,7 +28,7 @@ django.tar.gz:
 	mv "$${TMP}" "$@"
 
 tests/auth_tests: django.tar.gz
-	tar -xf $< --strip-components=2 -C ./tests "django*/tests/auth_tests"
+	tar --wildcards -xf $< --strip-components=2 -C ./tests "django*/tests/auth_tests"
 
 docs:
 	cd docs && $(MAKE) html

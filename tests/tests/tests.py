@@ -25,6 +25,10 @@ from django.utils.encoding import force_text
 from django.utils.translation import ugettext as _
 from django.forms.fields import Field
 from django.conf import settings
+from django.http import HttpRequest
+from django.middleware.csrf import CsrfViewMiddleware
+from django.contrib.sessions.middleware import SessionMiddleware
+from django.contrib.auth.views import login as login_view
 
 from authtools.views import LoginView
 
@@ -65,9 +69,32 @@ class WarningTestMixin(object):
                 assert issubclass(msg.category, expected_class)
 
 
+class EmailLoginMixin(object):
+    if settings.AUTH_USER_MODEL != 'auth.User':
+        if settings.AUTH_USER_MODEL == 'authtools.User':
+            fixtures = ['authtoolstestdata.json']
+        elif settings.AUTH_USER_MODEL == 'tests.User':
+            fixtures = ['customusertestdata.json']
+
+        def login(self, username='testclient', password='password'):
+            """
+            Authtools uses email addresses to login.
+
+            Fortunately, email addresses in the fixtures are username + '@example.com'
+            """
+            if username == 'staff':
+                username = 'staffmember@example.com'
+            elif '@' not in username:
+                username = username + '@example.com'
+            return super(EmailLoginMixin, self).login(username, password)
+
+
 @override_settings(ROOT_URLCONF='authtools.urls')
 class AuthViewNamedURLTests(AuthViewNamedURLTests):
-    pass
+    if settings.AUTH_USER_MODEL == 'authtools.User':
+        fixtures = ['authtoolstestdata.json']
+    elif settings.AUTH_USER_MODEL == 'tests.User':
+        fixtures = ['customusertestdata.json']
 
 
 class UtilsTest(TestCase):
@@ -76,8 +103,7 @@ class UtilsTest(TestCase):
 
 
 @override_settings(ROOT_URLCONF='tests.urls')
-class PasswordResetTest(PasswordResetTest):
-
+class PasswordResetTest(EmailLoginMixin, PasswordResetTest):
     # these use custom, test-specific urlpatterns that we don't have
     test_admin_reset = None
     test_reset_custom_redirect = None
@@ -85,6 +111,10 @@ class PasswordResetTest(PasswordResetTest):
     test_email_found_custom_from = None
     test_confirm_redirect_custom = None
     test_confirm_redirect_custom_named = None
+    # these reference the builtin user model
+    test_confirm_invalid_post = None
+    test_confirm_display_user_from_form = None
+    test_confirm_complete = None
 
     def assertFormError(self, response, error):
         """Assert that error is found in response.context['form'] errors"""
@@ -160,7 +190,7 @@ class PasswordResetTest(PasswordResetTest):
 
 
 @override_settings(ROOT_URLCONF='authtools.urls')
-class ChangePasswordTest(ChangePasswordTest):
+class ChangePasswordTest(EmailLoginMixin, ChangePasswordTest):
 
     test_password_change_redirect_custom = None
     test_password_change_redirect_custom_named = None
@@ -178,12 +208,26 @@ class ChangePasswordTest(ChangePasswordTest):
         self.fail_login()
         self.login(password='password1')
 
+    def fail_login(self, password='password'):
+        response = self.client.post('/login/', {
+            'username': 'testclient',
+            'password': password,
+        })
+        self.assertFormError(response, AuthenticationForm.error_messages['invalid_login'] % {
+            'username': User._meta.get_field(User.USERNAME_FIELD).verbose_name
+        })
+
 
 @override_settings(ROOT_URLCONF='authtools.urls')
-class LoginTest(LoginTest):
-
+class LoginTest(EmailLoginMixin, LoginTest):
     # the built-in tests depend on the django urlpatterns (they reverse
     # django.contrib.auth.views.login)
+
+    if settings.AUTH_USER_MODEL == 'auth.User':
+        default_login = 'testclient'
+    else:
+        default_login = 'testclient@example.com'
+
     def test_current_site_in_context_after_login(self):
         response = self.client.get(reverse('login'))
         self.assertEqual(response.status_code, 200)
@@ -208,7 +252,7 @@ class LoginTest(LoginTest):
                 'bad_url': urlquote(bad_url),
             }
             response = self.client.post(nasty_url, {
-                'username': 'testclient',
+                'username': self.default_login,
                 'password': password,
             })
             self.assertEqual(response.status_code, 302)
@@ -228,12 +272,51 @@ class LoginTest(LoginTest):
                 'good_url': urlquote(good_url),
             }
             response = self.client.post(safe_url, {
-                'username': 'testclient',
+                'username': self.default_login,
                 'password': password,
             })
             self.assertEqual(response.status_code, 302)
             self.assertTrue(good_url in response['Location'],
                             "%s should be allowed" % good_url)
+
+    def test_login_csrf_rotate(self, login=default_login, password='password'):
+        """
+        Makes sure that a login rotates the currently-used CSRF token.
+
+        This is copy-pasted from django to allow specifying the login (username).
+        """
+        # Do a GET to establish a CSRF token
+        # TestClient isn't used here as we're testing middleware, essentially.
+        req = HttpRequest()
+        CsrfViewMiddleware().process_view(req, login_view, (), {})
+        req.META["CSRF_COOKIE_USED"] = True
+        resp = login_view(req)
+        resp2 = CsrfViewMiddleware().process_response(req, resp)
+        csrf_cookie = resp2.cookies.get(settings.CSRF_COOKIE_NAME, None)
+        token1 = csrf_cookie.coded_value
+
+        # Prepare the POST request
+        req = HttpRequest()
+        req.COOKIES[settings.CSRF_COOKIE_NAME] = token1
+        req.method = "POST"
+        req.POST = {'username': login, 'password': password, 'csrfmiddlewaretoken': token1}
+
+        # Use POST request to log in
+        SessionMiddleware().process_request(req)
+        CsrfViewMiddleware().process_view(req, login_view, (), {})
+        req.META["SERVER_NAME"] = "testserver"  # Required to have redirect work in login view
+        req.META["SERVER_PORT"] = 80
+        resp = login_view(req)
+        resp2 = CsrfViewMiddleware().process_response(req, resp)
+        csrf_cookie = resp2.cookies.get(settings.CSRF_COOKIE_NAME, None)
+        token2 = csrf_cookie.coded_value
+
+        # Check the CSRF token switched
+        self.assertNotEqual(token1, token2)
+
+    # these reference the builtin user model
+    test_session_key_flushed_on_login_after_password_change = None
+    test_login_session_without_hash_session_key = None
 
 
 class DeprecationTest(WarningTestMixin, TestCase):
@@ -258,12 +341,14 @@ class DeprecationTest(WarningTestMixin, TestCase):
 
 @override_settings(ROOT_URLCONF='tests.urls')
 class LoginURLSettings(LoginURLSettings):
-    pass
+    if settings.AUTH_USER_MODEL == 'authtools.User':
+        fixtures = ['authtoolstestdata.json']
+    elif settings.AUTH_USER_MODEL == 'tests.User':
+        fixtures = ['customusertestdata.json']
 
 
 @override_settings(ROOT_URLCONF='tests.urls')
-class LogoutTest(LogoutTest):
-
+class LogoutTest(EmailLoginMixin, LogoutTest):
     test_logout_with_overridden_redirect_url = None
     test_logout_with_next_page_specified = None
     test_logout_with_custom_redirect_argument = None
