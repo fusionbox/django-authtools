@@ -14,6 +14,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'tests',
     'authtools',
+    'auth_tests',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -21,6 +22,8 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
 )
 
 DATABASES = {
@@ -35,7 +38,6 @@ DATABASES = {
 # (because these modules don't exist)
 MIGRATION_MODULES = {
     'auth': 'django.contrib.auth.tests.migrations',
-    'contenttypes': 'django.contrib.contenttypes.tests.migrations',
 }
 
 ROOT_URLCONF = 'tests.urls'
@@ -46,3 +48,11 @@ DEBUG = True
 AUTH_USER_MODEL = os.environ.get('AUTH_USER_MODEL', 'auth.User')
 
 print('Using %s as the AUTH_USER_MODEL.' % AUTH_USER_MODEL)
+
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'APP_DIRS': True,
+    },
+]

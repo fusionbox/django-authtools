@@ -6,14 +6,8 @@ cache:
   directories:
     - $HOME/.pip-cache/
 env:
-  - TOX_ENV=py26-dj15
-  - TOX_ENV=py26-dj16
-  - TOX_ENV=py27-dj15
-  - TOX_ENV=py27-dj16
-  - TOX_ENV=py27-dj17
-  - TOX_ENV=py33-dj15
-  - TOX_ENV=py33-dj16
-  - TOX_ENV=py33-dj17
+  - TOX_ENV=py27-dj18
+  - TOX_ENV=py33-dj18
 install:
   - pip install --upgrade pip
   - pip install tox==1.8.0
