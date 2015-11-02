@@ -1,7 +1,7 @@
 CHANGES
 =======
 
-1.4.0 (unreleased)
+1.4.0 (2015-11-02)
 ------------------
 
 - Dropped Django 1.7 compatibility (Antoine Catton)
