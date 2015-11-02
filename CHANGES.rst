@@ -1,6 +1,14 @@
 CHANGES
 =======
 
+1.4.0 (unreleased)
+------------------
+
+- Dropped Django 1.7 compatibility (Antoine Catton)
+- Add Django 1.8 compatibility (Antoine Catton, Gavin Wahl, #56)
+- **Backwards Incompatible:** Remove 1.6 URLs (Antoine Catton)
+- **Backwards Incompatible:** Remove view functions
+
 1.3.0 (unreleased)
 ------------------
 

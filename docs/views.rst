@@ -80,8 +80,6 @@ them after they reset their password.
         The form class to present the user.  This replaces the
         ``password_reset_form`` parameter present in the built-in function.
 
-.. function:: friendly_password_reset
-
     Django 1.6 `removed the email check from this view
     <https://code.djangoproject.com/ticket/19758>`_ in order to avoid
     leaking user email addresses.
@@ -97,18 +95,11 @@ them after they reset their password.
         urlpatterns += patterns( # ...
             # ...
             url('^auth/password_reset/$',
-                'authtools.views.friendly_password_reset',
+                PasswordResetView.as_view(FriendlyPasswordResetForm),
                 name='password_reset'),
             url('^auth/', include('authtools.urls'),
             # ...
         )
-
-    This view is defined like this::
-
-        friendly_password_reset = PasswordResetView.as_view(
-            form_class=FriendlyPasswordResetForm
-        )
-
 
 .. class:: PasswordResetDoneView
 
