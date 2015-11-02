@@ -38,7 +38,6 @@ DATABASES = {
 # (because these modules don't exist)
 MIGRATION_MODULES = {
     'auth': 'django.contrib.auth.tests.migrations',
-    'contenttypes': 'django.contrib.contenttypes.tests.migrations',
 }
 
 ROOT_URLCONF = 'tests.urls'
