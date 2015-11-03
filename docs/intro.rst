@@ -54,7 +54,7 @@ But it's supposed to be a *custom* User model!
 Making a User model that only concerns itself with authentication and
 authorization just *might* be a good idea.  I recommend you read these:
 
--  `The User-Profile Pattern in Django <http://www.fusionbox.com/blog/detail/the-user-profile-pattern-in-django/>`_
+-  `The User-Profile Pattern in Django <https://www.fusionbox.com/blog/detail/the-user-profile-pattern-in-django/560/>`_
 -  `Williams, Master of the "Come From" <https://github.com/raganwald/homoiconic/blob/master/2011/11/COMEFROM.md>`_
 
 Also, please read this quote from the `Django documentation
