@@ -33,7 +33,7 @@ class AbstractEmailUser(AbstractBaseUser, PermissionsMixin):
                     'site.'))
     is_active = models.BooleanField(_('active'), default=True,
         help_text=_('Designates whether this user should be treated as '
-                    'active.  Unselect this instead of deleting accounts.'))
+                    'active. Unselect this instead of deleting accounts.'))
     date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
 
     objects = UserManager()
