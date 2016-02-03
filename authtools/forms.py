@@ -152,8 +152,10 @@ class AdminUserChangeForm(UserChangeForm):
     def __init__(self, *args, **kwargs):
         super(AdminUserChangeForm, self).__init__(*args, **kwargs)
         if not self.fields['password'].help_text:
-            self.fields['password'].help_text = \
-                DjangoUserChangeForm.base_fields['password'].help_text
+            self.fields['password'].help_text = _(
+                "Raw passwords are not stored, so there is no way to see this"
+                " user's password, but you can change the password using"
+                " <a href=\"password/\">this form</a>.")
 
 
 class FriendlyPasswordResetForm(OldPasswordResetForm):
