@@ -107,18 +107,28 @@ class UserCreationForm(forms.ModelForm):
         return user
 
 
-class CaseInsensitiveEmailUserCreationForm(UserCreationForm):
+class CaseInsensitiveUsernameFieldCreationForm(UserCreationForm):
     """
     This form is the same as UserCreationForm, except that usernames are lowercased before they
     are saved. This is to disallow the existence of email address usernames which differ only in
     case.
     """
-    def clean_username(self):
-        username = self.cleaned_data.get('username')
+    def clean_USERNAME_FIELD(self):
+        username = self.cleaned_data.get(User.USERNAME_FIELD)
         if username:
             username = username.lower()
 
         return username
+
+# set the correct clean method on the class so that child classes can override and call super()
+setattr(
+    CaseInsensitiveUsernameFieldCreationForm,
+    'clean_' + User.USERNAME_FIELD,
+    CaseInsensitiveUsernameFieldCreationForm.clean_USERNAME_FIELD
+)
+
+# alias for the old name for backwards-compatability
+CaseInsensitiveEmailUserCreationForm = CaseInsensitiveUsernameFieldCreationForm
 
 
 class UserChangeForm(forms.ModelForm):
