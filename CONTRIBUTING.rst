@@ -32,6 +32,9 @@ django-authtools comes with a test suite that inherits from the built-in Django 
 This helps us ensure compatibility with Django and that we can get a little bit of code reuse. The
 tests are run three times against three different User models.
 
+You can get a test coverage report by running ``make coverage``. We do not strive for 100% coverage
+on django-authtools, but it is still a useful metric.
+
 .. _tox: http://tox.readthedocs.org/en/latest/
 
 

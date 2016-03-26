@@ -19,7 +19,8 @@ test-customuser: tests/auth_tests
 
 coverage:
 	+make test COVERAGE_COMMAND='coverage run --source=authtools --branch --parallel-mode'
-	cd tests && coverage combine && coverage html
+	cd tests && coverage combine && coverage html && coverage report
+	@echo "For more detail, visit $(PWD)/tests/htmlcov/index.html in your browser"
 
 django.tar.gz: export TMP=$(shell mktemp)
 django.tar.gz:
