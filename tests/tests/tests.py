@@ -45,7 +45,12 @@ from django.contrib.sites.shortcuts import get_current_site
 
 
 from authtools.admin import BASE_FIELDS
-from authtools.forms import UserCreationForm, UserChangeForm, FriendlyPasswordResetForm
+from authtools.forms import (
+    UserCreationForm,
+    UserChangeForm,
+    FriendlyPasswordResetForm,
+    CaseInsensitiveUsernameFieldCreationForm
+)
 from authtools.views import PasswordResetCompleteView, resolve_url_lazy
 
 User = get_user_model()
@@ -612,3 +617,41 @@ class UserModelTest(TestCase):
         self.assertEqual(message.body, "This is a message")
         self.assertEqual(message.from_email, "from@domain.com")
         self.assertEqual(message.to, [abstract_user.email])
+
+
+@override_settings(AUTHENTICATION_BACKENDS=['authtools.backends.CaseInsensitiveEmailModelBackend'])
+class CaseInsensitiveTest(TestCase):
+    def get_form_data(self, data):
+        base_data = {
+            'auth.User': {},
+            'authtools.User': {
+                'name': 'Test Name',
+            },
+            'tests.User': {
+                'full_name': 'Francis Underwood',
+                'preferred_name': 'Frank',
+            }
+        }
+        defaults = base_data[settings.AUTH_USER_MODEL]
+        defaults.update(data)
+        return defaults
+
+    def test_case_insensitive_login_works(self):
+        password = 'secret'
+        form = CaseInsensitiveUsernameFieldCreationForm(self.get_form_data({
+            User.USERNAME_FIELD: 'TEst@exAmPle.Com',
+            'password1': password,
+            'password2': password,
+        }))
+        self.assertTrue(form.is_valid(), form.errors)
+        form.save()
+
+        self.assertTrue(self.client.login(
+            username='test@example.com',
+            password=password,
+        ))
+
+        self.assertTrue(self.client.login(
+            username='TEST@EXAMPLE.COM',
+            password=password,
+        ))
