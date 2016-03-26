@@ -1,10 +1,12 @@
 CHANGES
 =======
 
-1.4.1 (unreleased)
+1.5.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Update various help_text fields to match Django 1.9 (Wenze van Klink #51, Gavin Wahl #64, Jared Proffitt #67, Ivan VenOsdel #69)
+- Documentation fixes (Yuki Izumi #52, Piët Delport #60, Germán Larraín #65)
+- Made case-insensitive tooling work with more than just USERNAME_FIELD='username' (Jared Proffitt, Rocky Meza #72, #73)
 
 
 1.4.0 (2015-11-02)
