@@ -14,12 +14,18 @@ User model that follows the :class:`User class contract <django:django.contrib.a
     Basically the same as django.contrib.auth, but respects ``USERNAME_FIELD``
     and ``User.REQUIRED_FIELDS``.
 
-.. class:: CaseInsensitiveEmailUserCreationForm
+.. class:: CaseInsensitiveUsernameFieldCreationForm
 
     This is the same form as ``UserCreationForm``, but with an added method, ``clean_username``
     which lowercases the username before saving. It is recommended that you use this form if you
-    choose to use either the  ``CaseInsensitiveEmailBackendMixin`` or
-    ``CaseInsensitiveEmailModelBackend`` authentication backend classes.
+    choose to use either the
+    :class:`~authtools.backends.CaseInsensitiveUsernameFieldModelBackend` authentication backend
+    class.
+
+    .. note::
+
+        This form is also available sa CaseInsensitiveEmailUserCreationForm for
+        backwards compatibility.
 
 .. class:: UserChangeForm
 

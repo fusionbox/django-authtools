@@ -255,7 +255,8 @@ texinfo_documents = [
 #texinfo_no_detailmenu = False
 
 intersphinx_mapping = {
-    'django': ('https://docs.djangoproject.com/en/1.5/', 'https://docs.djangoproject.com/en/1.5/_objects/'),
+    'django': ('https://docs.djangoproject.com/en/stable/',
+               'https://docs.djangoproject.com/en/stable/_objects/'),
 }
 
 sys.path.insert(0, os.path.abspath('../tests'))

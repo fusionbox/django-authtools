@@ -20,6 +20,7 @@ Contents:
     admin
     forms
     views
+    backends
     how-to/index
     talks
     changelog
