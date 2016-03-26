@@ -1,7 +1,7 @@
 CHANGES
 =======
 
-1.5.0 (unreleased)
+1.5.0 (2016-03-26)
 ------------------
 
 - Update various help_text fields to match Django 1.9 (Wenze van Klink #51, Gavin Wahl #64, Jared Proffitt #67, Ivan VenOsdel #69)
