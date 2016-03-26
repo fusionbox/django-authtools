@@ -49,7 +49,8 @@ from authtools.forms import (
     UserCreationForm,
     UserChangeForm,
     FriendlyPasswordResetForm,
-    CaseInsensitiveUsernameFieldCreationForm
+    CaseInsensitiveUsernameFieldCreationForm,
+    CaseInsensitiveEmailUserCreationForm,
 )
 from authtools.views import PasswordResetCompleteView, resolve_url_lazy
 
@@ -619,8 +620,10 @@ class UserModelTest(TestCase):
         self.assertEqual(message.to, [abstract_user.email])
 
 
-@override_settings(AUTHENTICATION_BACKENDS=['authtools.backends.CaseInsensitiveEmailModelBackend'])
+@override_settings(AUTHENTICATION_BACKENDS=['authtools.backends.CaseInsensitiveUsernameFieldModelBackend'])
 class CaseInsensitiveTest(TestCase):
+    form_class = CaseInsensitiveUsernameFieldCreationForm
+
     def get_form_data(self, data):
         base_data = {
             'auth.User': {},
@@ -638,7 +641,7 @@ class CaseInsensitiveTest(TestCase):
 
     def test_case_insensitive_login_works(self):
         password = 'secret'
-        form = CaseInsensitiveUsernameFieldCreationForm(self.get_form_data({
+        form = self.form_class(self.get_form_data({
             User.USERNAME_FIELD: 'TEst@exAmPle.Com',
             'password1': password,
             'password2': password,
@@ -655,3 +658,9 @@ class CaseInsensitiveTest(TestCase):
             username='TEST@EXAMPLE.COM',
             password=password,
         ))
+
+
+@override_settings(AUTHENTICATION_BACKENDS=['authtools.backends.CaseInsensitiveEmailModelBackend'])
+class CaseInsensitiveAliasTest(TestCase):
+    """Test that the aliases still work as well"""
+    form_class = CaseInsensitiveEmailUserCreationForm
