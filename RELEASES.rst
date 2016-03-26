@@ -10,7 +10,7 @@ Getting Setup
 
 You will need to install zest.releaser::
 
-    $ pip install zest.releaser
+    $ pip install -r requirements-dev.txt
 
 You will also need to configure your ``.pypirc`` file to have the PyPI
 credentials. Ask one of the other Fusionbox Programmers how to do that.

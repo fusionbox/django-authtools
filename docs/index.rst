@@ -23,6 +23,7 @@ Contents:
     backends
     how-to/index
     talks
+    contributing
     changelog
 
 Development
