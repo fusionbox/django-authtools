@@ -10,9 +10,14 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import identify_hasher
 from django.utils.translation import ugettext_lazy as _, ugettext
 from django.utils.html import format_html
+from importlib import import_module
 
 User = get_user_model()
 
+try:
+    password_validation_module = import_module('password_validation', 'django.contrib.auth')
+except ImportError:
+    password_validation_module = False
 
 def is_password_usable(pw):
     # like Django's is_password_usable, but only checks for unusable
@@ -96,6 +101,9 @@ class UserCreationForm(forms.ModelForm):
         password2 = self.cleaned_data.get("password2")
         if password1 and password2 and password1 != password2:
             raise forms.ValidationError(self.error_messages['password_mismatch'])
+        if password_validation_module:
+            self.instance.username = self.cleaned_data.get('username')
+            password_validation_module.validate_password(self.cleaned_data.get('password2'), self.instance)
         return password2
 
     def save(self, commit=True):
