@@ -8,7 +8,7 @@ import warnings
 from django.conf import settings
 from django.contrib.auth import get_user_model, REDIRECT_FIELD_NAME
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import (AuthenticationForm, SetPasswordForm,
+from django.contrib.auth.forms import (SetPasswordForm,
                                        PasswordChangeForm, PasswordResetForm)
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib import auth
@@ -26,6 +26,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import FormView, TemplateView, RedirectView
 
+from .forms import AuthenticationForm
 
 try:
     from django.contrib.auth import update_session_auth_hash
