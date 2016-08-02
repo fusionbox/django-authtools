@@ -195,4 +195,5 @@ class FriendlyPasswordResetForm(OldPasswordResetForm):
 class AuthenticationForm(DjangoAuthenticationForm):
     def __init__(self, request=None, *args, **kwargs):
         super(AuthenticationForm, self).__init__(request, *args, **kwargs)
-        self.fields['username'].widget = forms.EmailInput()
+        username_field = User._meta.get_field(User.USERNAME_FIELD)
+        self.fields['username'].widget = username_field.formfield().widget
