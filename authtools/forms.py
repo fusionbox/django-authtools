@@ -5,6 +5,7 @@ from django.contrib.auth.forms import (
     ReadOnlyPasswordHashField, ReadOnlyPasswordHashWidget,
     PasswordResetForm as OldPasswordResetForm,
     UserChangeForm as DjangoUserChangeForm,
+    AuthenticationForm as DjangoAuthenticationForm,
 )
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import identify_hasher
@@ -189,3 +190,7 @@ class FriendlyPasswordResetForm(OldPasswordResetForm):
         if not results:
             raise forms.ValidationError(self.error_messages['unknown'])
         return email
+
+
+class AuthenticationForm(DjangoAuthenticationForm):
+    username = forms.EmailField(max_length=254)
