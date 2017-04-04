@@ -17,6 +17,13 @@ INSTALLED_APPS = (
     'auth_tests',
 )
 
+import django
+if django.VERSION < (1, 7):
+    SOUTH_TESTS_MIGRATE = False
+    INSTALLED_APPS += (
+        'south',
+    )
+
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
