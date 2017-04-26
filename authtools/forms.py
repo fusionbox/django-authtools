@@ -32,7 +32,7 @@ class BetterReadOnlyPasswordHashWidget(ReadOnlyPasswordHashWidget):
     """
     A ReadOnlyPasswordHashWidget that has a less intimidating output.
     """
-    def render(self, name, value, attrs):
+    def render(self, name, value, attrs=None, renderer=None):
         try:
             from django.forms.utils import flatatt
         except ImportError:
