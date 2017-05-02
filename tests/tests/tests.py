@@ -16,7 +16,6 @@ from django.core import mail
 from django.core.urlresolvers import reverse
 from django.contrib.auth import REDIRECT_FIELD_NAME, get_user_model
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth.tests.utils import skipIfCustomUser
 from django.utils.http import urlquote
 from django.test import TestCase
 from django.test.client import RequestFactory
@@ -25,10 +24,6 @@ from django.utils.encoding import force_text
 from django.utils.translation import ugettext as _
 from django.forms.fields import Field
 from django.conf import settings
-from django.http import HttpRequest
-from django.middleware.csrf import CsrfViewMiddleware
-from django.contrib.sessions.middleware import SessionMiddleware
-from django.contrib.auth.views import login as login_view
 
 from authtools.views import LoginView
 
@@ -40,8 +35,7 @@ from auth_tests.test_views import (
     LoginURLSettings,
     LogoutTest,
 )
-
-from django.contrib.sites.shortcuts import get_current_site
+from auth_tests.test_forms import UserChangeFormTest
 
 
 from authtools.admin import BASE_FIELDS
@@ -59,6 +53,14 @@ User = get_user_model()
 
 def skipIfNotCustomUser(test_func):
     return skipIf(settings.AUTH_USER_MODEL == 'auth.User', 'Built-in User model in use')(test_func)
+
+
+def skipIfCustomUser(test_func):
+    """
+    Copied from django.contrib.auth.tests.utils, This is deprecated in the future, but we still
+    need it for some of our tests.
+    """
+    return skipIf(settings.AUTH_USER_MODEL != 'auth.User', 'Custom user model in use')(test_func)
 
 
 class WarningTestMixin(object):
@@ -110,17 +112,14 @@ class UtilsTest(TestCase):
 
 @override_settings(ROOT_URLCONF='tests.urls')
 class PasswordResetTest(EmailLoginMixin, PasswordResetTest):
-    # these use custom, test-specific urlpatterns that we don't have
     test_admin_reset = None
-    test_reset_custom_redirect = None
+    # These text the next_page parameter, but we just use success_url
     test_reset_custom_redirect_named = None
-    test_email_found_custom_from = None
-    test_confirm_redirect_custom = None
     test_confirm_redirect_custom_named = None
+    # This tests extra_email_context, we don't support that yet
+    test_extra_email_context = None
     # these reference the builtin user model
-    test_confirm_invalid_post = None
     test_confirm_display_user_from_form = None
-    test_confirm_complete = None
 
     def assertFormError(self, response, error):
         """Assert that error is found in response.context['form'] errors"""
@@ -234,95 +233,9 @@ class LoginTest(EmailLoginMixin, LoginTest):
     else:
         default_login = 'testclient@example.com'
 
-    def test_current_site_in_context_after_login(self):
-        response = self.client.get(reverse('login'))
-        self.assertEqual(response.status_code, 200)
-        site = get_current_site(response.request)
-        self.assertEqual(response.context['site'], site)
-        self.assertEqual(response.context['site_name'], site.name)
-        self.assertTrue(isinstance(response.context['form'], AuthenticationForm),
-                        'Login form is not an AuthenticationForm')
-
-    def test_security_check(self, password='password'):
-        login_url = reverse('login')
-
-        # Those URLs should not pass the security check
-        for bad_url in ('http://example.com',
-                        'https://example.com',
-                        'ftp://exampel.com',
-                        '//example.com'):
-
-            nasty_url = '%(url)s?%(next)s=%(bad_url)s' % {
-                'url': login_url,
-                'next': REDIRECT_FIELD_NAME,
-                'bad_url': urlquote(bad_url),
-            }
-            response = self.client.post(nasty_url, {
-                'username': self.default_login,
-                'password': password,
-            })
-            self.assertEqual(response.status_code, 302)
-            self.assertFalse(bad_url in response['Location'],
-                             "%s should be blocked" % bad_url)
-
-        # These URLs *should* still pass the security check
-        for good_url in ('/view/?param=http://example.com',
-                         '/view/?param=https://example.com',
-                         '/view?param=ftp://exampel.com',
-                         'view/?param=//example.com',
-                         '//testserver/',
-                         '/url%20with%20spaces/'):  # see ticket #12534
-            safe_url = '%(url)s?%(next)s=%(good_url)s' % {
-                'url': login_url,
-                'next': REDIRECT_FIELD_NAME,
-                'good_url': urlquote(good_url),
-            }
-            response = self.client.post(safe_url, {
-                'username': self.default_login,
-                'password': password,
-            })
-            self.assertEqual(response.status_code, 302)
-            self.assertTrue(good_url in response['Location'],
-                            "%s should be allowed" % good_url)
-
-    def test_login_csrf_rotate(self, login=default_login, password='password'):
-        """
-        Makes sure that a login rotates the currently-used CSRF token.
-
-        This is copy-pasted from django to allow specifying the login (username).
-        """
-        # Do a GET to establish a CSRF token
-        # TestClient isn't used here as we're testing middleware, essentially.
-        req = HttpRequest()
-        CsrfViewMiddleware().process_view(req, login_view, (), {})
-        req.META["CSRF_COOKIE_USED"] = True
-        resp = login_view(req)
-        resp2 = CsrfViewMiddleware().process_response(req, resp)
-        csrf_cookie = resp2.cookies.get(settings.CSRF_COOKIE_NAME, None)
-        token1 = csrf_cookie.coded_value
-
-        # Prepare the POST request
-        req = HttpRequest()
-        req.COOKIES[settings.CSRF_COOKIE_NAME] = token1
-        req.method = "POST"
-        req.POST = {'username': login, 'password': password, 'csrfmiddlewaretoken': token1}
-
-        # Use POST request to log in
-        SessionMiddleware().process_request(req)
-        CsrfViewMiddleware().process_view(req, login_view, (), {})
-        req.META["SERVER_NAME"] = "testserver"  # Required to have redirect work in login view
-        req.META["SERVER_PORT"] = 80
-        resp = login_view(req)
-        resp2 = CsrfViewMiddleware().process_response(req, resp)
-        csrf_cookie = resp2.cookies.get(settings.CSRF_COOKIE_NAME, None)
-        token2 = csrf_cookie.coded_value
-
-        # Check the CSRF token switched
-        self.assertNotEqual(token1, token2)
-
     # these reference the builtin user model
     test_session_key_flushed_on_login_after_password_change = None
-    test_login_session_without_hash_session_key = None
+    test_session_key_flushed_on_login_after_password_changetest_login_session_without_hash_session_key = None
 
 
 class DeprecationTest(WarningTestMixin, TestCase):
@@ -486,74 +399,7 @@ class UserCreationFormTest(TestCase):
 
 
 @skipIfCustomUser
-@override_settings(USE_TZ=False, PASSWORD_HASHERS=('django.contrib.auth.hashers.SHA1PasswordHasher',))
-class UserChangeFormTest(TestCase):
-    fixtures = ['authtestdata.json']
-
-    def test_bug_14242(self):
-        # A regression test, introduce by adding an optimization for the
-        # UserChangeForm.
-
-        class MyUserForm(UserChangeForm):
-            def __init__(self, *args, **kwargs):
-                super(MyUserForm, self).__init__(*args, **kwargs)
-                self.fields['groups'].help_text = 'These groups give users different permissions'
-
-            class Meta(UserChangeForm.Meta):
-                fields = ('groups',)
-
-        # Just check we can create it
-        MyUserForm({})
-
-    def test_unsuable_password(self):
-        user = User.objects.get(username='empty_password')
-        user.set_unusable_password()
-        user.save()
-        form = UserChangeForm(instance=user)
-        self.assertIn(_("No password set."), form.as_table())
-
-    def test_bug_17944_empty_password(self):
-        user = User.objects.get(username='empty_password')
-        form = UserChangeForm(instance=user)
-        self.assertIn(_("No password set."), form.as_table())
-
-    def test_bug_17944_unmanageable_password(self):
-        user = User.objects.get(username='unmanageable_password')
-        form = UserChangeForm(instance=user)
-        self.assertIn(_("Invalid password format or unknown hashing algorithm."),
-                      form.as_table())
-
-    def test_bug_17944_unknown_password_algorithm(self):
-        user = User.objects.get(username='unknown_password')
-        form = UserChangeForm(instance=user)
-        self.assertIn(_("Invalid password format or unknown hashing algorithm."),
-                      form.as_table())
-
-    def test_bug_19133(self):
-        "The change form does not return the password value"
-        # Use the form to construct the POST data
-        user = User.objects.get(username='testclient')
-        form_for_data = UserChangeForm(instance=user)
-        post_data = form_for_data.initial
-
-        # The password field should be readonly, so anything
-        # posted here should be ignored; the form will be
-        # valid, and give back the 'initial' value for the
-        # password field.
-        post_data['password'] = 'new password'
-        form = UserChangeForm(instance=user, data=post_data)
-
-        self.assertTrue(form.is_valid())
-        self.assertEqual(form.cleaned_data['password'], 'sha1$6efc0$f93efe9fd7542f25a7be94871ea45aa95de57161')
-
-    def test_bug_19349_bound_password_field(self):
-        user = User.objects.get(username='testclient')
-        form = UserChangeForm(data={}, instance=user)
-        # When rendering the bound password field,
-        # ReadOnlyPasswordHashWidget needs the initial
-        # value to render correctly
-        self.assertEqual(form.initial['password'], form['password'].value())
-
+class UserChangeFormTest(UserChangeFormTest):
     def test_better_readonly_password_widget(self):
         user = User.objects.get(username='testclient')
         form = UserChangeForm(instance=user)

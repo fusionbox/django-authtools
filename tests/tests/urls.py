@@ -1,5 +1,4 @@
-import django
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib import admin
@@ -24,5 +23,9 @@ urlpatterns = [
     url(r'^login_required/$', login_required(dumbview), name='login_required'),
     # From django.contrib.auth.tests.url
     url(r'^password_reset/html_email_template/$', views.PasswordResetView.as_view(html_email_template_name='registration/html_password_reset_email.html')),
+    url(r'^password_reset_from_email/$', views.PasswordResetView.as_view(from_email='staffmember@example.com')),
+    url(r'^password_reset/custom_redirect/$', views.PasswordResetView.as_view(success_url='/custom/')),
+    url(r'^reset/custom/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
+        views.PasswordResetConfirmView.as_view(success_url='/custom/')),
     url(r'^', include('authtools.urls')),
 ]
