@@ -8,3 +8,5 @@ dist/
 build/
 .tox
 /django.tar.gz
+.idea/
+.DS_Store

@@ -7,16 +7,24 @@ import contextlib
 import itertools
 import warnings
 
+import datetime
+
 try:
     from unittest import skipIf, skipUnless
 except ImportError:  # Python < 2.7
     from django.utils.unittest import skipIf, skipUnless
 
 from django.core import mail
-from django.core.urlresolvers import reverse
-from django.contrib.auth import REDIRECT_FIELD_NAME, get_user_model
+
+try:
+    # django >= 1.10
+    from django.urls import reverse
+except ImportError:
+    # django < 1.10
+    from django.core.urlresolvers import reverse
+
+from django.contrib.auth import REDIRECT_FIELD_NAME, get_user_model, SESSION_KEY
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth.tests.utils import skipIfCustomUser
 from django.utils.http import urlquote
 from django.test import TestCase
 from django.test.client import RequestFactory
@@ -26,9 +34,17 @@ from django.utils.translation import ugettext as _
 from django.forms.fields import Field
 from django.conf import settings
 from django.http import HttpRequest
-from django.middleware.csrf import CsrfViewMiddleware
+from django.middleware.csrf import CsrfViewMiddleware, get_token
 from django.contrib.sessions.middleware import SessionMiddleware
-from django.contrib.auth.views import login as login_view
+from django import VERSION as DJANGO_VERSION
+
+try:
+    # django >= 1.11
+    from django.contrib.auth.views import LoginView
+    login_view = LoginView.as_view()
+except ImportError:
+    # django < 1.11
+    from django.contrib.auth.views import login as login_view
 
 from authtools.views import LoginView
 
@@ -61,6 +77,14 @@ def skipIfNotCustomUser(test_func):
     return skipIf(settings.AUTH_USER_MODEL == 'auth.User', 'Built-in User model in use')(test_func)
 
 
+def skipIfCustomUser(test_func):
+    """
+    Copied from django.contrib.auth.tests.utils, This is deprecated in the future, but we still
+    need it for some of our tests.
+    """
+    return skipIf(settings.AUTH_USER_MODEL != 'auth.User', 'Custom user model in use')(test_func)
+
+
 class WarningTestMixin(object):
     @contextlib.contextmanager
     def assertWarns(self, warning_classes):
@@ -77,10 +101,11 @@ class WarningTestMixin(object):
 
 class EmailLoginMixin(object):
     if settings.AUTH_USER_MODEL != 'auth.User':
-        if settings.AUTH_USER_MODEL == 'authtools.User':
-            fixtures = ['authtoolstestdata.json']
-        elif settings.AUTH_USER_MODEL == 'tests.User':
-            fixtures = ['customusertestdata.json']
+        if DJANGO_VERSION[:2] < (1, 9):
+            if settings.AUTH_USER_MODEL == 'authtools.User':
+                fixtures = ['authtoolstestdata.json']
+            elif settings.AUTH_USER_MODEL == 'tests.User':
+                fixtures = ['customusertestdata.json']
 
         def login(self, username='testclient', password='password'):
             """
@@ -95,12 +120,93 @@ class EmailLoginMixin(object):
             return super(EmailLoginMixin, self).login(username, password)
 
 
+class AuthViewsTestCaseDataMixin(object):
+    """
+    Helper base class for all the follow test cases.
+    """
+
+    if DJANGO_VERSION[:2] >= (1, 9):
+        @classmethod
+        def setUpTestData(cls):
+            if settings.AUTH_USER_MODEL == 'auth.User':
+                cls.u1 = User.objects.create(
+                    password='sha1$6efc0$f93efe9fd7542f25a7be94871ea45aa95de57161',
+                    last_login=datetime.datetime(2006, 12, 17, 7, 3, 31), is_superuser=False, username='testclient',
+                    first_name='Test', last_name='Client', email='testclient@example.com', is_staff=False, is_active=True,
+                    date_joined=datetime.datetime(2006, 12, 17, 7, 3, 31)
+                )
+                cls.u2 = User.objects.create(
+                    password='sha1$6efc0$f93efe9fd7542f25a7be94871ea45aa95de57161',
+                    last_login=datetime.datetime(2006, 12, 17, 7, 3, 31), is_superuser=False, username='inactive',
+                    first_name='Inactive', last_name='User', email='testclient2@example.com', is_staff=False, is_active=False,
+                    date_joined=datetime.datetime(2006, 12, 17, 7, 3, 31)
+                )
+                cls.u3 = User.objects.create(
+                    password='sha1$6efc0$f93efe9fd7542f25a7be94871ea45aa95de57161',
+                    last_login=datetime.datetime(2006, 12, 17, 7, 3, 31), is_superuser=False, username='staff',
+                    first_name='Staff', last_name='Member', email='staffmember@example.com', is_staff=True, is_active=True,
+                    date_joined=datetime.datetime(2006, 12, 17, 7, 3, 31)
+                )
+                cls.u4 = User.objects.create(
+                    password='', last_login=datetime.datetime(2006, 12, 17, 7, 3, 31), is_superuser=False,
+                    username='empty_password', first_name='Empty', last_name='Password', email='empty_password@example.com',
+                    is_staff=False, is_active=True, date_joined=datetime.datetime(2006, 12, 17, 7, 3, 31)
+                )
+                cls.u5 = User.objects.create(
+                    password='$', last_login=datetime.datetime(2006, 12, 17, 7, 3, 31), is_superuser=False,
+                    username='unmanageable_password', first_name='Unmanageable', last_name='Password',
+                    email='unmanageable_password@example.com', is_staff=False, is_active=True,
+                    date_joined=datetime.datetime(2006, 12, 17, 7, 3, 31)
+                )
+                cls.u6 = User.objects.create(
+                    password='foo$bar', last_login=datetime.datetime(2006, 12, 17, 7, 3, 31), is_superuser=False,
+                    username='unknown_password', first_name='Unknown', last_name='Password',
+                    email='unknown_password@example.com', is_staff=False, is_active=True,
+                    date_joined=datetime.datetime(2006, 12, 17, 7, 3, 31)
+                )
+            else:
+                cls.u1 = User.objects.create(
+                    password='sha1$6efc0$f93efe9fd7542f25a7be94871ea45aa95de57161',
+                    last_login=datetime.datetime(2006, 12, 17, 7, 3, 31), is_superuser=False,
+                    email='testclient@example.com', is_staff=False, is_active=True,
+                    date_joined=datetime.datetime(2006, 12, 17, 7, 3, 31)
+                )
+                cls.u2 = User.objects.create(
+                    password='sha1$6efc0$f93efe9fd7542f25a7be94871ea45aa95de57161',
+                    last_login=datetime.datetime(2006, 12, 17, 7, 3, 31), is_superuser=False,
+                    email='testclient2@example.com', is_staff=False, is_active=False,
+                    date_joined=datetime.datetime(2006, 12, 17, 7, 3, 31)
+                )
+                cls.u3 = User.objects.create(
+                    password='sha1$6efc0$f93efe9fd7542f25a7be94871ea45aa95de57161',
+                    last_login=datetime.datetime(2006, 12, 17, 7, 3, 31), is_superuser=False,
+                    email='staffmember@example.com', is_staff=True, is_active=True,
+                    date_joined=datetime.datetime(2006, 12, 17, 7, 3, 31)
+                )
+                cls.u4 = User.objects.create(
+                    password='', last_login=datetime.datetime(2006, 12, 17, 7, 3, 31), is_superuser=False,
+                    email='empty_password@example.com',
+                    is_staff=False, is_active=True, date_joined=datetime.datetime(2006, 12, 17, 7, 3, 31)
+                )
+                cls.u5 = User.objects.create(
+                    password='$', last_login=datetime.datetime(2006, 12, 17, 7, 3, 31), is_superuser=False,
+                    email='unmanageable_password@example.com', is_staff=False, is_active=True,
+                    date_joined=datetime.datetime(2006, 12, 17, 7, 3, 31)
+                )
+                cls.u6 = User.objects.create(
+                    password='foo$bar', last_login=datetime.datetime(2006, 12, 17, 7, 3, 31), is_superuser=False,
+                    email='unknown_password@example.com', is_staff=False, is_active=True,
+                    date_joined=datetime.datetime(2006, 12, 17, 7, 3, 31)
+                )
+
+
 @override_settings(ROOT_URLCONF='authtools.urls')
-class AuthViewNamedURLTests(AuthViewNamedURLTests):
-    if settings.AUTH_USER_MODEL == 'authtools.User':
-        fixtures = ['authtoolstestdata.json']
-    elif settings.AUTH_USER_MODEL == 'tests.User':
-        fixtures = ['customusertestdata.json']
+class AuthViewNamedURLTests(AuthViewsTestCaseDataMixin, AuthViewNamedURLTests):
+    if DJANGO_VERSION[:2] < (1, 9):
+        if settings.AUTH_USER_MODEL == 'authtools.User':
+            fixtures = ['authtoolstestdata.json']
+        elif settings.AUTH_USER_MODEL == 'tests.User':
+            fixtures = ['customusertestdata.json']
 
 
 class UtilsTest(TestCase):
@@ -109,7 +215,7 @@ class UtilsTest(TestCase):
 
 
 @override_settings(ROOT_URLCONF='tests.urls')
-class PasswordResetTest(EmailLoginMixin, PasswordResetTest):
+class PasswordResetTest(EmailLoginMixin, AuthViewsTestCaseDataMixin, PasswordResetTest):
     # these use custom, test-specific urlpatterns that we don't have
     test_admin_reset = None
     test_reset_custom_redirect = None
@@ -139,7 +245,14 @@ class PasswordResetTest(EmailLoginMixin, PasswordResetTest):
 
     def test_user_only_fetched_once(self):
         url, confirm_path = self._test_confirm_start()
-        with self.assertNumQueries(1):
+
+        if DJANGO_VERSION[:2] >= (1, 11):
+            # django 1.11 checks and adds the token to the session, so there are a few more queries
+            num_queries = 9
+        else:
+            num_queries = 1
+
+        with self.assertNumQueries(num_queries):
             # the confirm view is only allowed to fetch the user object a
             # single time
             self.client.get(confirm_path)
@@ -190,13 +303,36 @@ class PasswordResetTest(EmailLoginMixin, PasswordResetTest):
                                            'new_password2': 'anewpassword'})
         self.assertEqual(response.status_code, 302)
 
+        if 'reset_and_login' in response.url:
+            # django > 1.11 redirects back with the token in the session, so we need to post again.
+            response = self.client.post(response.url, {'new_password1': 'anewpassword',
+                                               'new_password2': 'anewpassword'})
+            self.assertEqual(response.status_code, 302)
+
         # verify that we're actually logged in
         response = self.client.get('/login_required/')
         self.assertEqual(response.status_code, 200)
 
+    def test_confirm_invalid_hash(self):
+        """A POST with an invalid token is rejected."""
+        u = User.objects.get(email='staffmember@example.com')
+        original_password = u.password
+        url, path = self._test_confirm_start()
+        path_parts = path.split('-')
+        path_parts[-1] = ("0") * 20 + '/'
+        path = '-'.join(path_parts)
+
+        response = self.client.post(path, {
+            'new_password1': 'anewpassword',
+            'new_password2': 'anewpassword',
+        })
+        self.assertIs(response.context['validlink'], False)
+        u.refresh_from_db()
+        self.assertEqual(original_password, u.password)  # password hasn't changed
+
 
 @override_settings(ROOT_URLCONF='authtools.urls')
-class ChangePasswordTest(EmailLoginMixin, ChangePasswordTest):
+class ChangePasswordTest(EmailLoginMixin, AuthViewsTestCaseDataMixin, ChangePasswordTest):
 
     test_password_change_redirect_custom = None
     test_password_change_redirect_custom_named = None
@@ -224,8 +360,8 @@ class ChangePasswordTest(EmailLoginMixin, ChangePasswordTest):
         })
 
 
-@override_settings(ROOT_URLCONF='authtools.urls')
-class LoginTest(EmailLoginMixin, LoginTest):
+# @override_settings(ROOT_URLCONF='authtools.urls')
+class LoginTest(EmailLoginMixin, AuthViewsTestCaseDataMixin, LoginTest):
     # the built-in tests depend on the django urlpatterns (they reverse
     # django.contrib.auth.views.login)
 
@@ -295,7 +431,8 @@ class LoginTest(EmailLoginMixin, LoginTest):
         # TestClient isn't used here as we're testing middleware, essentially.
         req = HttpRequest()
         CsrfViewMiddleware().process_view(req, login_view, (), {})
-        req.META["CSRF_COOKIE_USED"] = True
+        # get_token() triggers CSRF token inclusion in the response
+        get_token(req)
         resp = login_view(req)
         resp2 = CsrfViewMiddleware().process_response(req, resp)
         csrf_cookie = resp2.cookies.get(settings.CSRF_COOKIE_NAME, None)
@@ -319,6 +456,34 @@ class LoginTest(EmailLoginMixin, LoginTest):
 
         # Check the CSRF token switched
         self.assertNotEqual(token1, token2)
+
+    def test_login_form_contains_request(self):
+        # The custom authentication form for this login requires a request to
+        # initialize it.
+        response = self.client.post('/custom_request_auth_login/', {
+            'username': self.default_login,
+            'password': 'password',
+        })
+        # The login was successful.
+        self.assertRedirects(response, settings.LOGIN_REDIRECT_URL, fetch_redirect_response=False)
+
+    if hasattr(LoginTest, 'test_security_check_https'):
+        def test_security_check_https(self):
+            login_url = reverse('login')
+            non_https_next_url = 'http://testserver/path'
+            not_secured_url = '%(url)s?%(next)s=%(next_url)s' % {
+                'url': login_url,
+                'next': REDIRECT_FIELD_NAME,
+                'next_url': urlquote(non_https_next_url),
+            }
+            post_data = {
+                'username': self.default_login,
+                'password': 'password',
+            }
+            response = self.client.post(not_secured_url, post_data, secure=True)
+            self.assertEqual(response.status_code, 302)
+            self.assertNotEqual(response.url, non_https_next_url)
+            self.assertEqual(response.url, settings.LOGIN_REDIRECT_URL)
 
     # these reference the builtin user model
     test_session_key_flushed_on_login_after_password_change = None
@@ -344,17 +509,17 @@ class DeprecationTest(WarningTestMixin, TestCase):
             assert view.get_allow_authenticated()
 
 
+@override_settings(ROOT_URLCONF='tests.urls')
+class LoginURLSettings(AuthViewsTestCaseDataMixin, LoginURLSettings):
+    if DJANGO_VERSION[:2] < (1, 9):
+        if settings.AUTH_USER_MODEL == 'authtools.User':
+            fixtures = ['authtoolstestdata.json']
+        elif settings.AUTH_USER_MODEL == 'tests.User':
+            fixtures = ['customusertestdata.json']
+
 
 @override_settings(ROOT_URLCONF='tests.urls')
-class LoginURLSettings(LoginURLSettings):
-    if settings.AUTH_USER_MODEL == 'authtools.User':
-        fixtures = ['authtoolstestdata.json']
-    elif settings.AUTH_USER_MODEL == 'tests.User':
-        fixtures = ['customusertestdata.json']
-
-
-@override_settings(ROOT_URLCONF='tests.urls')
-class LogoutTest(EmailLoginMixin, LogoutTest):
+class LogoutTest(EmailLoginMixin, AuthViewsTestCaseDataMixin, LogoutTest):
     test_logout_with_overridden_redirect_url = None
     test_logout_with_next_page_specified = None
     test_logout_with_custom_redirect_argument = None
@@ -488,7 +653,37 @@ class UserCreationFormTest(TestCase):
 @skipIfCustomUser
 @override_settings(USE_TZ=False, PASSWORD_HASHERS=('django.contrib.auth.hashers.SHA1PasswordHasher',))
 class UserChangeFormTest(TestCase):
-    fixtures = ['authtestdata.json']
+    @classmethod
+    def setUpTestData(cls):
+        cls.u1 = User.objects.create(
+            password='sha1$6efc0$f93efe9fd7542f25a7be94871ea45aa95de57161',
+            last_login=datetime.datetime(2006, 12, 17, 7, 3, 31), is_superuser=False, username='testclient',
+            first_name='Test', last_name='Client', email='testclient@example.com', is_staff=False, is_active=True,
+            date_joined=datetime.datetime(2006, 12, 17, 7, 3, 31)
+        )
+        # cls.u3 = User.objects.create(
+        #     password='sha1$6efc0$f93efe9fd7542f25a7be94871ea45aa95de57161',
+        #     last_login=datetime.datetime(2006, 12, 17, 7, 3, 31), is_superuser=False, username='staff',
+        #     first_name='Staff', last_name='Member', email='staffmember@example.com', is_staff=True, is_active=True,
+        #     date_joined=datetime.datetime(2006, 12, 17, 7, 3, 31)
+        # )
+        cls.u4 = User.objects.create(
+            password='', last_login=datetime.datetime(2006, 12, 17, 7, 3, 31), is_superuser=False,
+            username='empty_password', first_name='Empty', last_name='Password', email='empty_password@example.com',
+            is_staff=False, is_active=True, date_joined=datetime.datetime(2006, 12, 17, 7, 3, 31)
+        )
+        cls.u5 = User.objects.create(
+            password='$', last_login=datetime.datetime(2006, 12, 17, 7, 3, 31), is_superuser=False,
+            username='unmanageable_password', first_name='Unmanageable', last_name='Password',
+            email='unmanageable_password@example.com', is_staff=False, is_active=True,
+            date_joined=datetime.datetime(2006, 12, 17, 7, 3, 31)
+        )
+        cls.u6 = User.objects.create(
+            password='foo$bar', last_login=datetime.datetime(2006, 12, 17, 7, 3, 31), is_superuser=False,
+            username='unknown_password', first_name='Unknown', last_name='Password',
+            email='unknown_password@example.com', is_staff=False, is_active=True,
+            date_joined=datetime.datetime(2006, 12, 17, 7, 3, 31)
+        )
 
     def test_bug_14242(self):
         # A regression test, introduce by adding an optimization for the
@@ -664,3 +859,44 @@ class CaseInsensitiveTest(TestCase):
 class CaseInsensitiveAliasTest(TestCase):
     """Test that the aliases still work as well"""
     form_class = CaseInsensitiveEmailUserCreationForm
+
+
+try:
+    from auth_tests.test_views import LoginSuccessURLAllowedHostsTest
+
+    @override_settings(ROOT_URLCONF='tests.urls')
+    class LoginSuccessURLAllowedHostsTest(AuthViewsTestCaseDataMixin, LoginSuccessURLAllowedHostsTest):
+        if settings.AUTH_USER_MODEL == 'auth.User':
+            default_login = 'testclient'
+        else:
+            default_login = 'testclient@example.com'
+
+        def test_success_url_allowed_hosts_same_host(self):
+            response = self.client.post('/login/allowed_hosts/', {
+                'username': self.default_login,
+                'password': 'password',
+                'next': 'https://testserver/home',
+            })
+            self.assertIn(SESSION_KEY, self.client.session)
+            self.assertRedirects(response, 'https://testserver/home', fetch_redirect_response=False)
+
+        def test_success_url_allowed_hosts_safe_host(self):
+            response = self.client.post('/login/allowed_hosts/', {
+                'username': self.default_login,
+                'password': 'password',
+                'next': 'https://otherserver/home',
+            })
+            self.assertIn(SESSION_KEY, self.client.session)
+            self.assertRedirects(response, 'https://otherserver/home', fetch_redirect_response=False)
+
+        def test_success_url_allowed_hosts_unsafe_host(self):
+            response = self.client.post('/login/allowed_hosts/', {
+                'username': self.default_login,
+                'password': 'password',
+                'next': 'https://evil/home',
+            })
+            self.assertIn(SESSION_KEY, self.client.session)
+            self.assertRedirects(response, '/accounts/profile/', fetch_redirect_response=False)
+
+except ImportError:
+    pass

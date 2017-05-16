@@ -8,6 +8,12 @@ cache:
 env:
   - TOX_ENV=py27-dj18
   - TOX_ENV=py33-dj18
+  - TOX_ENV=py27-dj19
+  - TOX_ENV=py34-dj19
+  - TOX_ENV=py27-dj110
+  - TOX_ENV=py34-dj110
+  - TOX_ENV=py27-dj111
+  - TOX_ENV=py34-dj111
 install:
   - pip install --upgrade pip
   - pip install tox==1.8.0
