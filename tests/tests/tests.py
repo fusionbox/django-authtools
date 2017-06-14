@@ -240,7 +240,7 @@ class PasswordResetTest(EmailLoginMixin, AuthViewsTestCaseDataMixin, PasswordRes
         self.assertEqual(response.status_code, 200)
         response = self.client.post('/friendly_password_reset/',
                                     {'email': 'not_a_real_email@email.com'})
-        self.assertFormError(response, FriendlyPasswordResetForm.error_messages['unknown_email'])
+        self.assertFormError(response, FriendlyPasswordResetForm.error_messages['unknown'])
         self.assertEqual(len(mail.outbox), 0)
 
     def test_user_only_fetched_once(self):

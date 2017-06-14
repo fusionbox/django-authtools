@@ -163,9 +163,9 @@ class AdminUserChangeForm(UserChangeForm):
 
 class FriendlyPasswordResetForm(OldPasswordResetForm):
     error_messages = dict(getattr(OldPasswordResetForm, 'error_messages', {}))
-    error_messages['unknown_email'] = _("This email address doesn't have an "
-                                        "associated user account. Are you "
-                                        "sure you've registered?")
+    error_messages['unknown'] = _("This email address doesn't have an "
+                                  "associated user account. Are you "
+                                  "sure you've registered?")
 
     def clean_email(self):
         """Return an error message if the email address being reset is unknown.
@@ -183,7 +183,7 @@ class FriendlyPasswordResetForm(OldPasswordResetForm):
         results = list(self.get_users(email))
 
         if not results:
-            raise forms.ValidationError(self.error_messages['unknown_email'])
+            raise forms.ValidationError(self.error_messages['unknown'])
         return email
 
 
