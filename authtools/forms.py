@@ -17,8 +17,14 @@ User = get_user_model()
 
 
 def is_password_usable(pw):
-    # like Django's is_password_usable, but only checks for unusable
-    # passwords, not invalidly encoded passwords too.
+    """Decide whether a password is usable only by the unusable password prefix.
+
+
+    We can't use django.contrib.auth.hashers.is_password_usable either, because
+    it not only checks against the unusable password, but checks for a valid
+    hasher too. We need different error messages in those cases.
+    """
+
     return not pw.startswith(UNUSABLE_PASSWORD_PREFIX)
 
 
