@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 from django import forms, VERSION as DJANGO_VERSION
+from django.forms.utils import flatatt
 from django.contrib.auth.forms import (
     ReadOnlyPasswordHashField, ReadOnlyPasswordHashWidget,
     PasswordResetForm as OldPasswordResetForm,
@@ -8,7 +9,7 @@ from django.contrib.auth.forms import (
     AuthenticationForm as DjangoAuthenticationForm,
 )
 from django.contrib.auth import get_user_model
-from django.contrib.auth.hashers import identify_hasher
+from django.contrib.auth.hashers import identify_hasher, UNUSABLE_PASSWORD_PREFIX
 from django.utils.translation import ugettext_lazy as _, ugettext
 from django.utils.html import format_html
 
@@ -16,16 +17,14 @@ User = get_user_model()
 
 
 def is_password_usable(pw):
-    # like Django's is_password_usable, but only checks for unusable
-    # passwords, not invalidly encoded passwords too.
-    try:
-        # 1.5
-        from django.contrib.auth.hashers import UNUSABLE_PASSWORD
-        return pw != UNUSABLE_PASSWORD
-    except ImportError:
-        # 1.6
-        from django.contrib.auth.hashers import UNUSABLE_PASSWORD_PREFIX
-        return not pw.startswith(UNUSABLE_PASSWORD_PREFIX)
+    """Decide whether a password is usable only by the unusable password prefix.
+
+    We can't use django.contrib.auth.hashers.is_password_usable either, because
+    it not only checks against the unusable password, but checks for a valid
+    hasher too. We need different error messages in those cases.
+    """
+
+    return not pw.startswith(UNUSABLE_PASSWORD_PREFIX)
 
 
 class BetterReadOnlyPasswordHashWidget(ReadOnlyPasswordHashWidget):
@@ -33,10 +32,6 @@ class BetterReadOnlyPasswordHashWidget(ReadOnlyPasswordHashWidget):
     A ReadOnlyPasswordHashWidget that has a less intimidating output.
     """
     def render(self, name, value, attrs=None, renderer=None):
-        try:
-            from django.forms.utils import flatatt
-        except ImportError:
-            from django.forms.util import flatatt  # Django < 1.7
         final_attrs = flatatt(self.build_attrs(attrs))
 
         if not value or not is_password_usable(value):
@@ -143,8 +138,7 @@ class UserChangeForm(forms.ModelForm):
 
     class Meta:
         model = User
-        if DJANGO_VERSION >= (1, 6):
-            fields = '__all__'
+        fields = '__all__'
 
     def __init__(self, *args, **kwargs):
         super(UserChangeForm, self).__init__(*args, **kwargs)
@@ -174,19 +168,20 @@ class FriendlyPasswordResetForm(OldPasswordResetForm):
                                   "sure you've registered?")
 
     def clean_email(self):
-        super_clean_email = getattr(
-            super(FriendlyPasswordResetForm, self), 'clean_email', None)
-        if callable(super_clean_email):  # Django == 1.5
-            # Django 1.5 sets self.user_cache
-            return super_clean_email()
+        """Return an error message if the email address being reset is unknown.
 
-        # Simulate Django 1.5 behavior in Django >= 1.6.
-        # This is not as efficient as in Django 1.5, since clean_email() and
-        # save() will be running the same query twice.
-        # Whereas Django 1.5 just caches it.
+        This is to revert https://code.djangoproject.com/ticket/19758
+        The bug #19758 tries not to leak emails through password reset because
+        only usernames are unique in Django's default user model.
+
+        django-authtools leaks email addresses through the registration form.
+        In the case of django-authtools not warning the user doesn't add any
+        security, and worsen user experience.
+        """
+
         email = self.cleaned_data['email']
-        qs = User._default_manager.filter(is_active=True, email__iexact=email)
-        results = [user for user in qs if user.has_usable_password()]
+        results = list(self.get_users(email))
+
         if not results:
             raise forms.ValidationError(self.error_messages['unknown'])
         return email

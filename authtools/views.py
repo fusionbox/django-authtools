@@ -14,10 +14,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib import auth
 from django.http import HttpResponseRedirect
 
-try:
-    from django.contrib.sites.shortcuts import get_current_site
-except ImportError:
-    from django.contrib.sites.models import get_current_site  # Django < 1.7
+from django.contrib.sites.shortcuts import get_current_site
 
 try:
     # django >= 1.10
@@ -40,16 +37,11 @@ except ImportError:
         # skip since this was not available before django 1.11
         pass
 
-try:
-    from django.contrib.auth import update_session_auth_hash
-except ImportError:
-    # Django < 1.7
-    def update_session_auth_hash(request, user):
-        pass
+from django.contrib.auth import update_session_auth_hash
 
 from django.shortcuts import redirect, resolve_url
 from django.utils.functional import lazy
-from django.utils.http import base36_to_int, is_safe_url
+from django.utils.http import base36_to_int, is_safe_url, urlsafe_base64_decode
 from django.utils import six
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
@@ -112,7 +104,12 @@ class WithNextUrlMixin(object):
             except AttributeError:
                 pass
 
-            url_is_safe = is_safe_url(redirect_to, allowed_hosts=allowed_hosts, require_https=self.request.is_secure())
+            url_is_safe = is_safe_url(
+                redirect_to,
+                allowed_hosts=allowed_hosts,
+                require_https=self.request.is_secure()
+            )
+
         except TypeError:
             # django < 1.11
             url_is_safe = is_safe_url(redirect_to, host=host)
@@ -172,7 +169,8 @@ class AuthDecoratorsMixin(NeverCacheMixin, CsrfProtectMixin, SensitivePostParame
     pass
 
 
-class LoginView(AuthDecoratorsMixin, SuccessURLAllowedHostsMixin, WithCurrentSiteMixin, WithNextUrlMixin, FormView):
+class LoginView(AuthDecoratorsMixin, SuccessURLAllowedHostsMixin,
+                WithCurrentSiteMixin, WithNextUrlMixin, FormView):
     form_class = AuthenticationForm
     authentication_form = None
     template_name = 'registration/login.html'
@@ -351,17 +349,9 @@ class PasswordResetConfirmView(AuthDecoratorsMixin, FormView):
         return User._default_manager.all()
 
     def get_user(self):
-        # django 1.5 uses uidb36, django 1.6 uses uidb64
-        uidb36 = self.kwargs.get('uidb36')
         uidb64 = self.kwargs.get('uidb64')
-        assert bool(uidb36) ^ bool(uidb64)
         try:
-            if uidb36:
-                uid = base36_to_int(uidb36)
-            else:
-                # urlsafe_base64_decode is not available in django 1.5
-                from django.utils.http import urlsafe_base64_decode
-                uid = urlsafe_base64_decode(uidb64)
+            uid = urlsafe_base64_decode(uidb64)
             return self.get_queryset().get(pk=uid)
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
             return None

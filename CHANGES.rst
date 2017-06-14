@@ -4,7 +4,9 @@ CHANGES
 1.6.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Add support for Django 1.9, 1.10, 1.11 (Jared Proffitt #82)
+- Remove old conditional imports dating as far back as Django 1.5
+- Update readme
 
 
 1.5.0 (2016-03-26)

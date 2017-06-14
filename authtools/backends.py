@@ -42,7 +42,9 @@ class CaseInsensitiveUsernameFieldBackendMixin(object):
             )
 
 
-class CaseInsensitiveUsernameFieldModelBackend(CaseInsensitiveUsernameFieldBackendMixin, ModelBackend):
+class CaseInsensitiveUsernameFieldModelBackend(
+        CaseInsensitiveUsernameFieldBackendMixin,
+        ModelBackend):
     pass
 
 
