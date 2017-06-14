@@ -1,7 +1,7 @@
 CHANGES
 =======
 
-1.6.0 (unreleased)
+1.6.0 (2017-06-14)
 ------------------
 
 - Add support for Django 1.9, 1.10, 1.11 (Jared Proffitt #82)
