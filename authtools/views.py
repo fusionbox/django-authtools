@@ -395,7 +395,6 @@ class PasswordResetConfirmView(AuthDecoratorsMixin, FormView):
 class PasswordResetConfirmAndLoginView(PasswordResetConfirmView):
     success_url = resolve_url_lazy(settings.LOGIN_REDIRECT_URL)
 
-
     def save_form(self, form):
         ret = super(PasswordResetConfirmAndLoginView, self).save_form(form)
         user = auth.authenticate(username=self.user.get_username(),
