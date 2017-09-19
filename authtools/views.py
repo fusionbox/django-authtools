@@ -394,12 +394,20 @@ class PasswordResetConfirmView(AuthDecoratorsMixin, FormView):
 
 class PasswordResetConfirmAndLoginView(PasswordResetConfirmView):
     success_url = resolve_url_lazy(settings.LOGIN_REDIRECT_URL)
+    post_reset_login = True
 
     def save_form(self, form):
         ret = super(PasswordResetConfirmAndLoginView, self).save_form(form)
         user = auth.authenticate(username=self.user.get_username(),
                                  password=form.cleaned_data['new_password1'])
-        auth.login(self.request, user)
+
+        if INTERNAL_RESET_SESSION_TOKEN and INTERNAL_RESET_URL_TOKEN:
+            # post_reset_login will log the user in in Django 1.11. We don't
+            # need to do it here. But we do have to set the backend.
+            self.post_reset_login_backend = user.backend
+        else:
+            auth.login(self.request, user)
+
         return ret
 
 
