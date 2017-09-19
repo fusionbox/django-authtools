@@ -4,7 +4,8 @@ CHANGES
 1.7 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Fix bug when using Django 1.11 where resetting a password when already logged in
+  as another user caused an error
 
 
 1.6.0 (2017-06-14)
