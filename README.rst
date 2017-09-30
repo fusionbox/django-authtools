@@ -1,7 +1,7 @@
 django-authtools
 ================
 
-.. image:: https://travis-ci.org/fusionbox/django-authtools.png
+.. image:: https://travis-ci.org/fusionbox/django-authtools.svg
    :target: http://travis-ci.org/fusionbox/django-authtools
    :alt: Build Status
 
