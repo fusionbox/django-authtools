@@ -23,17 +23,23 @@ Before you use this, you should probably read the documentation about `custom
 User models
 <https://docs.djangoproject.com/en/dev/topics/auth/customizing/#substituting-a-custom-user-model>`_.
 
-1.  Install the package::
+1.  Install the package:
+
+    .. code-block:: bash
 
         $ pip install django-authtools
 
 2.  Add ``authtools`` to your ``INSTALLED_APPS``.
 
-3.  Add the following to your settings.py::
+3.  Add the following to your settings.py:
+
+    .. code-block:: python
 
         AUTH_USER_MODEL = 'authtools.User'
 
-4.  Add ``authtools.urls`` to your URL patterns::
+4.  Add ``authtools.urls`` to your URL patterns:
+
+    .. code-block:: python
 
         urlpatterns = patterns('',
             # ...
