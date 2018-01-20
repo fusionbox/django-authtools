@@ -33,7 +33,7 @@ User models
 
 3.  Add the following to your settings.py:
 
-    .. code-block:: bash
+    .. code-block:: python
 
         AUTH_USER_MODEL = 'authtools.User'
 
