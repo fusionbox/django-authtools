@@ -158,7 +158,7 @@ class AdminUserChangeForm(UserChangeForm):
         super(AdminUserChangeForm, self).__init__(*args, **kwargs)
         if not self.fields['password'].help_text:
             self.fields['password'].help_text = \
-                DjangoUserChangeForm.base_fields['password'].help_text
+                DjangoUserChangeForm.base_fields['password'].help_text.format('../password/')
 
 
 class FriendlyPasswordResetForm(OldPasswordResetForm):

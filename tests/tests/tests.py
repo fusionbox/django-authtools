@@ -67,7 +67,7 @@ from authtools.forms import (
     FriendlyPasswordResetForm,
     CaseInsensitiveUsernameFieldCreationForm,
     CaseInsensitiveEmailUserCreationForm,
-)
+    AdminUserChangeForm)
 from authtools.views import PasswordResetCompleteView, resolve_url_lazy
 
 User = get_user_model()
@@ -754,6 +754,26 @@ class UserChangeFormTest(TestCase):
         form = UserChangeForm(instance=user)
 
         self.assertIn(_('*************'), form.as_table())
+
+
+@skipIfCustomUser
+class AdminUserChangeFormTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.u = User.objects.create(
+            password='sha1$6efc0$f93efe9fd7542f25a7be94871ea45aa95de57161',
+            last_login=datetime.datetime(2006, 12, 17, 7, 3, 31), is_superuser=False, username='testclient',
+            first_name='Test', last_name='Client', email='testclient@example.com', is_staff=False, is_active=True,
+            date_joined=datetime.datetime(2006, 12, 17, 7, 3, 31)
+        )
+
+    def test_password_reset_link(self):
+        user = User.objects.get(username='testclient')
+        form = AdminUserChangeForm(data={}, instance=user)
+        if DJANGO_VERSION[:2] < (1, 9):
+            assert 'href="password/"' in form.fields['password'].help_text
+        else:
+            assert 'href="../password/"' in form.fields['password'].help_text
 
 
 class UserAdminTest(TestCase):
