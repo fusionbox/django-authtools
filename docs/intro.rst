@@ -14,7 +14,9 @@ Installation
 
         $ pip install -e git+http://github.com/fusionbox/django-authtools@master#egg=django-authtools-dev
 
-2.  Run the authtools migrations::
+2.  Add ``authtools`` to your ``INSTALLED_APPS``.
+
+3.  Run the authtools migrations::
 
         $ python manage.py migrate
 
