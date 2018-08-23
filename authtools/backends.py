@@ -1,9 +1,10 @@
 from django.contrib.auth.backends import ModelBackend
-from django import VERSION as DJANGO_VERSION
 
 
 class CaseInsensitiveUsernameFieldBackendMixin(object):
     """
+    Case Insensitive backend meant for emails.
+
     This authentication backend assumes that usernames are email addresses and simply
     lowercases a username before an attempt is made to authenticate said username using a
     superclass's authenticate method. This superclass should be either a user-defined
@@ -19,27 +20,16 @@ class CaseInsensitiveUsernameFieldBackendMixin(object):
         CaseInsensitiveUsernameFieldCreationForm provided in the forms module.
     """
 
-    if DJANGO_VERSION[:2] >= (1, 11):  # django 1.11 and above require a request positional arg
-        def authenticate(self, request, username=None, password=None, **kwargs):
-            if username is not None:
-                username = username.lower()
+    def authenticate(self, request, username=None, password=None, **kwargs):
+        if username is not None:
+            username = username.lower()
 
-            return super(CaseInsensitiveUsernameFieldBackendMixin, self).authenticate(
-                request,
-                username=username,
-                password=password,
-                **kwargs
-            )
-    else:
-        def authenticate(self, username=None, password=None, **kwargs):
-            if username is not None:
-                username = username.lower()
-
-            return super(CaseInsensitiveUsernameFieldBackendMixin, self).authenticate(
-                username=username,
-                password=password,
-                **kwargs
-            )
+        return super(CaseInsensitiveUsernameFieldBackendMixin, self).authenticate(
+            request,
+            username=username,
+            password=password,
+            **kwargs
+        )
 
 
 class CaseInsensitiveUsernameFieldModelBackend(
