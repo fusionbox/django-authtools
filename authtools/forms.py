@@ -1,6 +1,4 @@
-from __future__ import unicode_literals
-
-from django import forms, VERSION as DJANGO_VERSION
+from django import forms
 from django.forms.utils import flatatt
 from django.contrib.auth.forms import (
     ReadOnlyPasswordHashField, ReadOnlyPasswordHashWidget,
@@ -23,14 +21,12 @@ def is_password_usable(pw):
     it not only checks against the unusable password, but checks for a valid
     hasher too. We need different error messages in those cases.
     """
-
     return not pw.startswith(UNUSABLE_PASSWORD_PREFIX)
 
 
 class BetterReadOnlyPasswordHashWidget(ReadOnlyPasswordHashWidget):
-    """
-    A ReadOnlyPasswordHashWidget that has a less intimidating output.
-    """
+    """A ReadOnlyPasswordHashWidget that has a less intimidating output."""
+
     def render(self, name, value, attrs=None, renderer=None):
         final_attrs = flatatt(self.build_attrs(attrs))
 
@@ -51,8 +47,8 @@ class BetterReadOnlyPasswordHashWidget(ReadOnlyPasswordHashWidget):
 
 class UserCreationForm(forms.ModelForm):
     """
-    A form for creating new users. Includes all the required
-    fields, plus a repeated password.
+    A form for creating new users.
+    Includes all the required fields, plus a repeated password.
     """
 
     error_messages = {
@@ -60,7 +56,8 @@ class UserCreationForm(forms.ModelForm):
         'duplicate_username': _("A user with that %(username)s already exists."),
     }
 
-    password1 = forms.CharField(label=_("Password"), widget=forms.PasswordInput)
+    password1 = forms.CharField(
+        label=_("Password"), widget=forms.PasswordInput)
     password2 = forms.CharField(label=_("Password confirmation"),
                                 widget=forms.PasswordInput,
                                 help_text=_("Enter the same password as above,"
@@ -84,14 +81,16 @@ class UserCreationForm(forms.ModelForm):
                 'username': User.USERNAME_FIELD,
             })
 
-        self.fields[User.USERNAME_FIELD].validators.append(validate_uniqueness_of_username_field)
+        self.fields[User.USERNAME_FIELD].validators.append(
+            validate_uniqueness_of_username_field)
 
     def clean_password2(self):
         # Check that the two password entries match
         password1 = self.cleaned_data.get("password1")
         password2 = self.cleaned_data.get("password2")
         if password1 and password2 and password1 != password2:
-            raise forms.ValidationError(self.error_messages['password_mismatch'])
+            raise forms.ValidationError(
+                self.error_messages['password_mismatch'])
         return password2
 
     def save(self, commit=True):
@@ -109,12 +108,14 @@ class CaseInsensitiveUsernameFieldCreationForm(UserCreationForm):
     are saved. This is to disallow the existence of email address usernames which differ only in
     case.
     """
+
     def clean_USERNAME_FIELD(self):
         username = self.cleaned_data.get(User.USERNAME_FIELD)
         if username:
             username = username.lower()
 
         return username
+
 
 # set the correct clean method on the class so that child classes can override and call super()
 setattr(
@@ -129,12 +130,14 @@ CaseInsensitiveEmailUserCreationForm = CaseInsensitiveUsernameFieldCreationForm
 
 class UserChangeForm(forms.ModelForm):
     """
-    A form for updating users. Includes all the fields on
-    the user, but replaces the password field with admin's
+    A form for updating users.
+
+    Includes all the fields on the user, but replaces the password field with admin's
     password hash display field.
     """
-    password = ReadOnlyPasswordHashField(label=_("Password"),
-        widget=BetterReadOnlyPasswordHashWidget)
+
+    password = ReadOnlyPasswordHashField(
+        label=_("Password"), widget=BetterReadOnlyPasswordHashWidget)
 
     class Meta:
         model = User
@@ -158,7 +161,8 @@ class AdminUserChangeForm(UserChangeForm):
         super(AdminUserChangeForm, self).__init__(*args, **kwargs)
         if not self.fields['password'].help_text:
             self.fields['password'].help_text = \
-                DjangoUserChangeForm.base_fields['password'].help_text
+                DjangoUserChangeForm.base_fields['password'].help_text.format(
+                    '../password/')
 
 
 class FriendlyPasswordResetForm(OldPasswordResetForm):
@@ -178,7 +182,6 @@ class FriendlyPasswordResetForm(OldPasswordResetForm):
         In the case of django-authtools not warning the user doesn't add any
         security, and worsen user experience.
         """
-
         email = self.cleaned_data['email']
         results = list(self.get_users(email))
 

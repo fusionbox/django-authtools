@@ -10,8 +10,8 @@ urlpatterns = [
         name='login'
     ),
     url(
-        r'^logout/$'
-        , views.LogoutView.as_view(),
+        r'^logout/$',
+        views.LogoutView.as_view(),
         name='logout'
     ),
     url(

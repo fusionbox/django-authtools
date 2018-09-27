@@ -1,8 +1,7 @@
 """
-Mostly equivalent to the views from django.contrib.auth.views, but
-implemented as class-based views.
+Mostly equivalent to the views from django.contrib.auth.views.
+But implemented as class-based views.
 """
-from __future__ import unicode_literals
 import warnings
 
 from django.conf import settings
@@ -16,12 +15,7 @@ from django.http import HttpResponseRedirect
 
 from django.contrib.sites.shortcuts import get_current_site
 
-try:
-    # django >= 1.10
-    from django.urls import reverse_lazy
-except ImportError:
-    # django < 1.10
-    from django.core.urlresolvers import reverse_lazy
+from django.urls import reverse_lazy
 
 try:
     from django.contrib.auth.views import INTERNAL_RESET_URL_TOKEN, INTERNAL_RESET_SESSION_TOKEN
@@ -29,19 +23,11 @@ except ImportError:
     INTERNAL_RESET_URL_TOKEN = None
     INTERNAL_RESET_SESSION_TOKEN = None
 
-try:
-    # this is used in django > 1.11
-    from django.contrib.auth.views import SuccessURLAllowedHostsMixin
-except ImportError:
-    class SuccessURLAllowedHostsMixin(object):
-        # skip since this was not available before django 1.11
-        pass
-
+from django.contrib.auth.views import SuccessURLAllowedHostsMixin
 from django.contrib.auth import update_session_auth_hash
-
 from django.shortcuts import redirect, resolve_url
 from django.utils.functional import lazy
-from django.utils.http import base36_to_int, is_safe_url, urlsafe_base64_decode
+from django.utils.http import is_safe_url, urlsafe_base64_decode
 from django.utils import six
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
@@ -129,8 +115,7 @@ class WithNextUrlMixin(object):
 
 def DecoratorMixin(decorator):
     """
-    Converts a decorator written for a function view into a mixin for a
-    class-based view.
+    Convert a decorator written for a function view into a mixin for a class-based view.
 
     ::
 
@@ -144,7 +129,6 @@ def DecoratorMixin(decorator):
             pass
 
     """
-
     class Mixin(object):
         __doc__ = decorator.__doc__
 
@@ -164,6 +148,7 @@ SensitivePostParametersMixin = DecoratorMixin(
     sensitive_post_parameters('password', 'old_password', 'password1',
                               'password2', 'new_password1', 'new_password2')
 )
+
 
 class AuthDecoratorsMixin(NeverCacheMixin, CsrfProtectMixin, SensitivePostParametersMixin):
     pass

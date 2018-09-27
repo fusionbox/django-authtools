@@ -18,8 +18,8 @@ install_requires = [
 
 setup(
     name='django-authtools',
-    version='1.7.dev0',
-    author='Fusionbox, Inc.',
+    version='1.8',
+    author='Fusionbox, Inc., Oli Warner',
     author_email='programmers@fusionbox.com',
     description=__doc__,
     long_description='\n\n'.join([read('README.rst'), read('CHANGES.rst')]),

@@ -1,11 +1,9 @@
-from __future__ import unicode_literals
-
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.core.mail import send_mail
 from django.db import models
 from django.utils import timezone
-from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
+from django.core.exceptions import ValidationError
 
 
 class UserManager(BaseUserManager):
@@ -51,11 +49,21 @@ class AbstractEmailUser(AbstractBaseUser, PermissionsMixin):
         return self.email
 
     def email_user(self, subject, message, from_email=None, **kwargs):
-        """Sends an email to this User."""
-
+        """Send an email to this User."""
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
-@python_2_unicode_compatible
+    def validate_unique(self, exclude=None):
+        super().validate_unique(exclude=exclude)
+
+        # Manual iexact duplicate checking on email.
+        if self.USERNAME_FIELD == 'email':
+            query = self.__class__.objects.filter(email__iexact=self.email)
+            if self.pk:
+                query = query.exclude(pk=self.pk)
+            if query.exists():
+                raise ValidationError('An account with this email already exists.')
+
+
 class AbstractNamedUser(AbstractEmailUser):
     name = models.CharField(_('name'), max_length=255)
 
