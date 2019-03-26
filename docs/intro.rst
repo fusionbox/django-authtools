@@ -60,7 +60,7 @@ authorization just *might* be a good idea.  I recommend you read these:
 -  `Williams, Master of the "Come From" <https://github.com/raganwald/homoiconic/blob/master/2011/11/COMEFROM.md>`_
 
 Also, please read this quote from the `Django documentation
-<https://docs.djangoproject.com/en/1.5/topics/auth/customizing/#specifying-a-custom-user-model>`_:
+<https://docs.djangoproject.com/en/2.1/topics/auth/customizing/#specifying-a-custom-user-model>`_:
 
 .. warning::
 
