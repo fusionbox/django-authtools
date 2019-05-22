@@ -8,7 +8,7 @@ from django.contrib.auth.forms import (
     UserChangeForm as DjangoUserChangeForm,
     AuthenticationForm as DjangoAuthenticationForm,
 )
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, password_validation
 from django.contrib.auth.hashers import identify_hasher, UNUSABLE_PASSWORD_PREFIX
 from django.utils.translation import ugettext_lazy as _, ugettext
 from django.utils.html import format_html
@@ -93,6 +93,17 @@ class UserCreationForm(forms.ModelForm):
         if password1 and password2 and password1 != password2:
             raise forms.ValidationError(self.error_messages['password_mismatch'])
         return password2
+
+    def _post_clean(self):
+        super(UserCreationForm, self)._post_clean()
+        # Validate the password after self.instance is updated with form data
+        # by super().
+        password = self.cleaned_data.get('password2')
+        if password:
+            try:
+                password_validation.validate_password(password, self.instance)
+            except forms.ValidationError as error:
+                self.add_error('password2', error)
 
     def save(self, commit=True):
         # Save the provided password in hashed format
