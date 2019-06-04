@@ -6,38 +6,24 @@ from __future__ import unicode_literals
 import warnings
 
 from django.conf import settings
-from django.contrib.auth import get_user_model, REDIRECT_FIELD_NAME, login as auth_login
+from django.contrib.auth
+    get_user_model, update_session_auth_hash,
+    REDIRECT_FIELD_NAME, login as auth_login
+)
+from django.contrib.auth.views import (
+    SuccessURLAllowedHostsMixin, INTERNAL_RESET_URL_TOKEN,
+    INTERNAL_RESET_SESSION_TOKEN
+)
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import (SetPasswordForm,
-                                       PasswordChangeForm, PasswordResetForm)
+from django.contrib.auth.forms import (
+    SetPasswordForm, PasswordChangeForm, PasswordResetForm
+)
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib import auth
 from django.http import HttpResponseRedirect
+from django.urls import reverse_lazy
 
 from django.contrib.sites.shortcuts import get_current_site
-
-try:
-    # django >= 1.10
-    from django.urls import reverse_lazy
-except ImportError:
-    # django < 1.10
-    from django.core.urlresolvers import reverse_lazy
-
-try:
-    from django.contrib.auth.views import INTERNAL_RESET_URL_TOKEN, INTERNAL_RESET_SESSION_TOKEN
-except ImportError:
-    INTERNAL_RESET_URL_TOKEN = None
-    INTERNAL_RESET_SESSION_TOKEN = None
-
-try:
-    # this is used in django > 1.11
-    from django.contrib.auth.views import SuccessURLAllowedHostsMixin
-except ImportError:
-    class SuccessURLAllowedHostsMixin(object):
-        # skip since this was not available before django 1.11
-        pass
-
-from django.contrib.auth import update_session_auth_hash
 
 from django.shortcuts import redirect, resolve_url
 from django.utils.functional import lazy
@@ -94,25 +80,18 @@ class WithNextUrlMixin(object):
             return
 
         host = self.request.get_host()
+        allowed_hosts = [host]
 
         try:
-            # django >= 1.11 changed host arg to allowed_hosts list arg
-            allowed_hosts = [host]
+            allowed_hosts += self.get_success_url_allowed_hosts()
+        except AttributeError:
+            pass
 
-            try:
-                allowed_hosts += self.get_success_url_allowed_hosts()
-            except AttributeError:
-                pass
-
-            url_is_safe = is_safe_url(
-                redirect_to,
-                allowed_hosts=allowed_hosts,
-                require_https=self.request.is_secure()
-            )
-
-        except TypeError:
-            # django < 1.11
-            url_is_safe = is_safe_url(redirect_to, host=host)
+        url_is_safe = is_safe_url(
+            redirect_to,
+            allowed_hosts=allowed_hosts,
+            require_https=self.request.is_secure()
+        )
 
         if url_is_safe:
             return redirect_to
@@ -190,7 +169,7 @@ class LoginView(AuthDecoratorsMixin, SuccessURLAllowedHostsMixin,
 
     def dispatch(self, *args, **kwargs):
         allow_authenticated = self.get_allow_authenticated()
-        if not allow_authenticated and self.request.user.is_authenticated():
+        if not allow_authenticated and self.request.user.is_authenticated:
             return redirect(self.get_success_url())
         return super(LoginView, self).dispatch(*args, **kwargs)
 
@@ -321,27 +300,23 @@ class PasswordResetConfirmView(AuthDecoratorsMixin, FormView):
         self.validlink = False
 
         if self.user is not None:
-            if INTERNAL_RESET_SESSION_TOKEN and INTERNAL_RESET_URL_TOKEN:
-                # django 1.11 does this differently. Most of this is copied from django
-                token = kwargs['token']
-                if token == INTERNAL_RESET_URL_TOKEN:
-                    session_token = self.request.session.get(INTERNAL_RESET_SESSION_TOKEN)
-                    if self.token_generator.check_token(self.user, session_token):
-                        # If the token is valid, display the password reset form.
-                        self.validlink = True
-                        return super(PasswordResetConfirmView, self).dispatch(*args, **kwargs)
-                else:
-                    if self.token_generator.check_token(self.user, token):
-                        # Store the token in the session and redirect to the
-                        # password reset form at a URL without the token. That
-                        # avoids the possibility of leaking the token in the
-                        # HTTP Referer header.
-                        self.request.session[INTERNAL_RESET_SESSION_TOKEN] = token
-                        redirect_url = self.request.path.replace(token, INTERNAL_RESET_URL_TOKEN)
-                        return HttpResponseRedirect(redirect_url)
+            # Most of this is copied from django
+            token = kwargs['token']
+            if token == INTERNAL_RESET_URL_TOKEN:
+                session_token = self.request.session.get(INTERNAL_RESET_SESSION_TOKEN)
+                if self.token_generator.check_token(self.user, session_token):
+                    # If the token is valid, display the password reset form.
+                    self.validlink = True
+                    return super(PasswordResetConfirmView, self).dispatch(*args, **kwargs)
             else:
-                # do the pre django 1.11 way.
-                self.validlink = self.valid_link()
+                if self.token_generator.check_token(self.user, token):
+                    # Store the token in the session and redirect to the
+                    # password reset form at a URL without the token. That
+                    # avoids the possibility of leaking the token in the
+                    # HTTP Referer header.
+                    self.request.session[INTERNAL_RESET_SESSION_TOKEN] = token
+                    redirect_url = self.request.path.replace(token, INTERNAL_RESET_URL_TOKEN)
+                    return HttpResponseRedirect(redirect_url)
 
         return super(PasswordResetConfirmView, self).dispatch(*args, **kwargs)
 
@@ -400,13 +375,10 @@ class PasswordResetConfirmAndLoginView(PasswordResetConfirmView):
         user = auth.authenticate(username=self.user.get_username(),
                                  password=form.cleaned_data['new_password1'])
 
-        if INTERNAL_RESET_SESSION_TOKEN and INTERNAL_RESET_URL_TOKEN:
-            # post_reset_login will log the user in in Django 1.11. We don't
-            # need to do it here. But we do have to set the backend.
-            self.post_reset_login = True
-            self.post_reset_login_backend = user.backend
-        else:
-            auth.login(self.request, user)
+        # post_reset_login will log the user in in Django 1.11. We don't
+        # need to do it here. But we do have to set the backend.
+        self.post_reset_login = True
+        self.post_reset_login_backend = user.backend
 
         return ret
 

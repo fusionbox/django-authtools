@@ -6,7 +6,7 @@ django-authtools
    :alt: Build Status
 
 
-A custom user model app for Django 1.8+ that features email as username and
+A custom user model app for Django 1.11+ that features email as username and
 other things. It tries to stay true to the built-in user model for the most
 part.
 

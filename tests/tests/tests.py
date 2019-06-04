@@ -9,19 +9,10 @@ import warnings
 
 import datetime
 
-try:
-    from unittest import skipIf, skipUnless
-except ImportError:  # Python < 2.7
-    from django.utils.unittest import skipIf, skipUnless
+from unittest import skipIf, skipUnless
 
 from django.core import mail
-
-try:
-    # django >= 1.10
-    from django.urls import reverse
-except ImportError:
-    # django < 1.10
-    from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from django.contrib.auth import REDIRECT_FIELD_NAME, get_user_model, SESSION_KEY
 from django.contrib.auth.forms import AuthenticationForm
@@ -38,13 +29,8 @@ from django.middleware.csrf import CsrfViewMiddleware, get_token
 from django.contrib.sessions.middleware import SessionMiddleware
 from django import VERSION as DJANGO_VERSION
 
-try:
-    # django >= 1.11
-    from django.contrib.auth.views import LoginView
-    login_view = LoginView.as_view()
-except ImportError:
-    # django < 1.11
-    from django.contrib.auth.views import login as login_view
+from django.contrib.auth.views import LoginView
+login_view = LoginView.as_view()
 
 from authtools.views import LoginView
 
@@ -55,6 +41,7 @@ from auth_tests.test_views import (
     LoginTest,
     LoginURLSettings,
     LogoutTest,
+    LoginSuccessURLAllowedHostsTest,
 )
 
 from django.contrib.sites.shortcuts import get_current_site
@@ -245,12 +232,7 @@ class PasswordResetTest(EmailLoginMixin, AuthViewsTestCaseDataMixin, PasswordRes
 
     def test_user_only_fetched_once(self):
         url, confirm_path = self._test_confirm_start()
-
-        if DJANGO_VERSION[:2] >= (1, 11):
-            # django 1.11 checks and adds the token to the session, so there are a few more queries
-            num_queries = 9
-        else:
-            num_queries = 1
+        num_queries = 9
 
         with self.assertNumQueries(num_queries):
             # the confirm view is only allowed to fetch the user object a
@@ -303,11 +285,10 @@ class PasswordResetTest(EmailLoginMixin, AuthViewsTestCaseDataMixin, PasswordRes
                                            'new_password2': 'anewpassword'})
         self.assertEqual(response.status_code, 302)
 
-        if 'reset_and_login' in response.url:
-            # django > 1.11 redirects back with the token in the session, so we need to post again.
-            response = self.client.post(response.url, {'new_password1': 'anewpassword',
-                                               'new_password2': 'anewpassword'})
-            self.assertEqual(response.status_code, 302)
+
+        response = self.client.post(response.url, {'new_password1': 'anewpassword',
+                                            'new_password2': 'anewpassword'})
+        self.assertEqual(response.status_code, 302)
 
         # verify that we're actually logged in
         response = self.client.get('/login_required/')
@@ -860,43 +841,36 @@ class CaseInsensitiveAliasTest(TestCase):
     """Test that the aliases still work as well"""
     form_class = CaseInsensitiveEmailUserCreationForm
 
+@override_settings(ROOT_URLCONF='tests.urls')
+class LoginSuccessURLAllowedHostsTest(AuthViewsTestCaseDataMixin, LoginSuccessURLAllowedHostsTest):
+    if settings.AUTH_USER_MODEL == 'auth.User':
+        default_login = 'testclient'
+    else:
+        default_login = 'testclient@example.com'
 
-try:
-    from auth_tests.test_views import LoginSuccessURLAllowedHostsTest
+    def test_success_url_allowed_hosts_same_host(self):
+        response = self.client.post('/login/allowed_hosts/', {
+            'username': self.default_login,
+            'password': 'password',
+            'next': 'https://testserver/home',
+        })
+        self.assertIn(SESSION_KEY, self.client.session)
+        self.assertRedirects(response, 'https://testserver/home', fetch_redirect_response=False)
 
-    @override_settings(ROOT_URLCONF='tests.urls')
-    class LoginSuccessURLAllowedHostsTest(AuthViewsTestCaseDataMixin, LoginSuccessURLAllowedHostsTest):
-        if settings.AUTH_USER_MODEL == 'auth.User':
-            default_login = 'testclient'
-        else:
-            default_login = 'testclient@example.com'
+    def test_success_url_allowed_hosts_safe_host(self):
+        response = self.client.post('/login/allowed_hosts/', {
+            'username': self.default_login,
+            'password': 'password',
+            'next': 'https://otherserver/home',
+        })
+        self.assertIn(SESSION_KEY, self.client.session)
+        self.assertRedirects(response, 'https://otherserver/home', fetch_redirect_response=False)
 
-        def test_success_url_allowed_hosts_same_host(self):
-            response = self.client.post('/login/allowed_hosts/', {
-                'username': self.default_login,
-                'password': 'password',
-                'next': 'https://testserver/home',
-            })
-            self.assertIn(SESSION_KEY, self.client.session)
-            self.assertRedirects(response, 'https://testserver/home', fetch_redirect_response=False)
-
-        def test_success_url_allowed_hosts_safe_host(self):
-            response = self.client.post('/login/allowed_hosts/', {
-                'username': self.default_login,
-                'password': 'password',
-                'next': 'https://otherserver/home',
-            })
-            self.assertIn(SESSION_KEY, self.client.session)
-            self.assertRedirects(response, 'https://otherserver/home', fetch_redirect_response=False)
-
-        def test_success_url_allowed_hosts_unsafe_host(self):
-            response = self.client.post('/login/allowed_hosts/', {
-                'username': self.default_login,
-                'password': 'password',
-                'next': 'https://evil/home',
-            })
-            self.assertIn(SESSION_KEY, self.client.session)
-            self.assertRedirects(response, '/accounts/profile/', fetch_redirect_response=False)
-
-except ImportError:
-    pass
+    def test_success_url_allowed_hosts_unsafe_host(self):
+        response = self.client.post('/login/allowed_hosts/', {
+            'username': self.default_login,
+            'password': 'password',
+            'next': 'https://evil/home',
+        })
+        self.assertIn(SESSION_KEY, self.client.session)
+        self.assertRedirects(response, '/accounts/profile/', fetch_redirect_response=False)
