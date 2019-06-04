@@ -1,22 +1,16 @@
-sudo: false
 language: python
-python:
-  - "2.7"
-cache:
-  directories:
-    - $HOME/.pip-cache/
-env:
-  - TOX_ENV=py27-dj18
-  - TOX_ENV=py27-dj19
-  - TOX_ENV=py34-dj19
-  - TOX_ENV=py27-dj110
-  - TOX_ENV=py34-dj110
-  - TOX_ENV=py27-dj111
-  - TOX_ENV=py34-dj111
+matrix:
+  include:
+    - python: 3.6
+      env: TOXENV=py36-dj111
+    - python: 3.6
+      env: TOXENV=py36-dj21
+
+    - python: 2.7
+      env: TOXENV=py27-dj111
+
 install:
-  - pip install --upgrade pip
-  - pip install tox==1.8.0
+  - ./.travis/install
+
 script:
-  - tox -e $TOX_ENV
-after_script:
-  - cat .tox/$TOX_ENV/log/*.log
+  - ./.travis/run tox
