@@ -40,18 +40,9 @@ DATABASES = {
     }
 }
 
-if DJANGO_VERSION[:2] >= (1, 9):
-    # django 1.9 introduced the ability to set None to disable migrations.
-    MIGRATION_MODULES = {
-        'auth': None,
-    }
-else:
-    # This comes from django@1.7#tests/runtests.py
-    # This ignores migrations on auth and contenttypes apps
-    # (because these modules don't exist)
-    MIGRATION_MODULES = {
-        'auth': 'django.contrib.auth.tests.migrations',
-    }
+MIGRATION_MODULES = {
+    'auth': None,
+}
 
 ROOT_URLCONF = 'tests.urls'
 

@@ -200,7 +200,7 @@ class LogoutView(NeverCacheMixin, SuccessURLAllowedHostsMixin, WithCurrentSiteMi
 
         if redirect_to:
             return redirect_to
-        elif getattr(settings, 'LOGOUT_REDIRECT_URL', None) is not None:  # Setting is only available in django 1.10
+        elif getattr(settings, 'LOGOUT_REDIRECT_URL', None) is not None:
             return resolve_url(settings.LOGOUT_REDIRECT_URL)
         elif self.request.POST.get(self.redirect_field_name, self.request.GET.get(self.redirect_field_name, '')):
             # we have a url, but it is not safe. Django redirects back to the same view.
