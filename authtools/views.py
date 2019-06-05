@@ -375,7 +375,7 @@ class PasswordResetConfirmAndLoginView(PasswordResetConfirmView):
         user = auth.authenticate(username=self.user.get_username(),
                                  password=form.cleaned_data['new_password1'])
 
-        # post_reset_login will log the user in in Django 1.11. We don't
+        # post_reset_login will log the user in. We don't
         # need to do it here. But we do have to set the backend.
         self.post_reset_login = True
         self.post_reset_login_backend = user.backend
