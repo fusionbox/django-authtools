@@ -19,28 +19,16 @@ class CaseInsensitiveUsernameFieldBackendMixin(object):
         CaseInsensitiveUsernameFieldCreationForm provided in the forms module.
     """
 
-    if DJANGO_VERSION[:2] >= (1, 11):  # django 1.11 and above require a request positional arg
-        def authenticate(self, request, username=None, password=None, **kwargs):
-            if username is not None:
-                username = username.lower()
+    def authenticate(self, request, username=None, password=None, **kwargs):
+        if username is not None:
+            username = username.lower()
 
-            return super(CaseInsensitiveUsernameFieldBackendMixin, self).authenticate(
-                request,
-                username=username,
-                password=password,
-                **kwargs
-            )
-    else:
-        def authenticate(self, username=None, password=None, **kwargs):
-            if username is not None:
-                username = username.lower()
-
-            return super(CaseInsensitiveUsernameFieldBackendMixin, self).authenticate(
-                username=username,
-                password=password,
-                **kwargs
-            )
-
+        return super(CaseInsensitiveUsernameFieldBackendMixin, self).authenticate(
+            request,
+            username=username,
+            password=password,
+            **kwargs
+        )
 
 class CaseInsensitiveUsernameFieldModelBackend(
         CaseInsensitiveUsernameFieldBackendMixin,

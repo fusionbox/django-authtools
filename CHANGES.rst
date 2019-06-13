@@ -6,6 +6,7 @@ CHANGES
 
 - Fix bug when using Django 1.11 where resetting a password when already logged in
   as another user caused an error
+- Remove support for Django versions below 1.11 and Python below 2.7 and 3.6
 
 
 1.6.0 (2017-06-14)

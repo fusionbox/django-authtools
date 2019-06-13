@@ -3,15 +3,12 @@ from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib import admin
 
-try:
-    # django >= 1.10
-    from django.urls import reverse_lazy
-except ImportError:
-    # django < 1.10
-    from django.core.urlresolvers import reverse_lazy
+from django.urls import reverse_lazy
 
 from authtools import views
 from authtools.forms import FriendlyPasswordResetForm
+
+from auth_tests.urls import CustomRequestAuthenticationForm, uid_token
 
 admin.autodiscover()
 
@@ -34,24 +31,18 @@ urlpatterns = [
     url(r'^', include('authtools.urls')),
 ]
 
-try:
-    # django >= 1.11 adds these tests
-    from auth_tests.urls import CustomRequestAuthenticationForm, uid_token
-
-    urlpatterns += [
-        url(r'^reset/post_reset_login/{}/$'.format(uid_token),
-            views.PasswordResetConfirmView.as_view(post_reset_login=True)),
-        url(r'^custom_request_auth_login/$',
-            views.LoginView.as_view(authentication_form=CustomRequestAuthenticationForm)),
-        url(
-            r'^reset/post_reset_login_custom_backend/{}/$'.format(uid_token),
-            views.PasswordResetConfirmView.as_view(
-                post_reset_login=True,
-                post_reset_login_backend='django.contrib.auth.backends.AllowAllUsersModelBackend',
-            ),
+urlpatterns += [
+    url(r'^reset/post_reset_login/{}/$'.format(uid_token),
+        views.PasswordResetConfirmView.as_view(post_reset_login=True)),
+    url(r'^custom_request_auth_login/$',
+        views.LoginView.as_view(authentication_form=CustomRequestAuthenticationForm)),
+    url(
+        r'^reset/post_reset_login_custom_backend/{}/$'.format(uid_token),
+        views.PasswordResetConfirmView.as_view(
+            post_reset_login=True,
+            post_reset_login_backend='django.contrib.auth.backends.AllowAllUsersModelBackend',
         ),
-        url(r'^logout/allowed_hosts/$', views.LogoutView.as_view(success_url_allowed_hosts={'otherserver'})),
-        url(r'^login/allowed_hosts/$', views.LoginView.as_view(success_url_allowed_hosts={'otherserver'})),
-    ]
-except ImportError:
-    pass
+    ),
+    url(r'^logout/allowed_hosts/$', views.LogoutView.as_view(success_url_allowed_hosts={'otherserver'})),
+    url(r'^login/allowed_hosts/$', views.LoginView.as_view(success_url_allowed_hosts={'otherserver'})),
+]
