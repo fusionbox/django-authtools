@@ -18,7 +18,7 @@ install_requires = [
 
 setup(
     name='django-authtools',
-    version='1.7.0',
+    version='1.8.0.dev0',
     author='Fusionbox, Inc.',
     author_email='programmers@fusionbox.com',
     description=__doc__,
