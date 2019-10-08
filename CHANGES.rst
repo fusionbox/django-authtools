@@ -4,7 +4,7 @@ CHANGES
 1.8.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fix bug where request is not properly set on AuthenticationForm (#102)
 
 
 1.7.0 (2019-06-26)

@@ -189,6 +189,11 @@ class LoginView(AuthDecoratorsMixin, SuccessURLAllowedHostsMixin,
         })
         return kwargs
 
+    def get_form_kwargs(self):
+        kwargs = super(LoginView, self).get_form_kwargs()
+        kwargs['request'] = self.request
+        return kwargs
+
 
 class LogoutView(NeverCacheMixin, SuccessURLAllowedHostsMixin, WithCurrentSiteMixin, WithNextUrlMixin, TemplateView,
                  RedirectView):
