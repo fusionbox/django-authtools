@@ -377,7 +377,8 @@ class PasswordResetConfirmAndLoginView(PasswordResetConfirmView):
 
     def save_form(self, form):
         ret = super(PasswordResetConfirmAndLoginView, self).save_form(form)
-        user = auth.authenticate(username=self.user.get_username(),
+        user = auth.authenticate(request=self.request,
+                                 username=self.user.get_username(),
                                  password=form.cleaned_data['new_password1'])
 
         # post_reset_login will log the user in. We don't
