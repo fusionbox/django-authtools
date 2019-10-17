@@ -5,6 +5,7 @@ CHANGES
 ------------------
 
 - Fix bug where request is not properly set on AuthenticationForm (#102)
+- Fix bug where request not passed through on PasswordResetConfirmAndLoginView (#103)
 
 
 1.7.0 (2019-06-26)
