@@ -138,40 +138,6 @@ setattr(
 CaseInsensitiveEmailUserCreationForm = CaseInsensitiveUsernameFieldCreationForm
 
 
-class UserChangeForm(forms.ModelForm):
-    """
-    A form for updating users. Includes all the fields on
-    the user, but replaces the password field with admin's
-    password hash display field.
-    """
-    password = ReadOnlyPasswordHashField(label=_("Password"),
-        widget=BetterReadOnlyPasswordHashWidget)
-
-    class Meta:
-        model = User
-        fields = '__all__'
-
-    def __init__(self, *args, **kwargs):
-        super(UserChangeForm, self).__init__(*args, **kwargs)
-        f = self.fields.get('user_permissions', None)
-        if f is not None:
-            f.queryset = f.queryset.select_related('content_type')
-
-    def clean_password(self):
-        # Regardless of what the user provides, return the initial value.
-        # This is done here, rather than on the field, because the
-        # field does not have access to the initial value
-        return self.initial["password"]
-
-
-class AdminUserChangeForm(UserChangeForm):
-    def __init__(self, *args, **kwargs):
-        super(AdminUserChangeForm, self).__init__(*args, **kwargs)
-        if not self.fields['password'].help_text:
-            self.fields['password'].help_text = \
-                DjangoUserChangeForm.base_fields['password'].help_text
-
-
 class FriendlyPasswordResetForm(OldPasswordResetForm):
     error_messages = dict(getattr(OldPasswordResetForm, 'error_messages', {}))
     error_messages['unknown'] = _("This email address doesn't have an "

@@ -27,16 +27,6 @@ User model that follows the :class:`User class contract <django:django.contrib.a
         This form is also available sa CaseInsensitiveEmailUserCreationForm for
         backwards compatibility.
 
-.. class:: UserChangeForm
-
-    A normal ModelForm that adds a ``ReadOnlyPasswordHashField`` with the
-    :class:`BetterReadOnlyPasswordHashWidget`.
-
-.. class:: AdminUserChangeForm
-
-    Same as :class:`UserChangeForm`, but adds a link to the admin change
-    password form.
-
 .. class:: FriendlyPasswordResetForm
 
     Basically the same as

@@ -1,11 +1,13 @@
 CHANGES
 =======
 
-1.8.0 (unreleased)
+2.0.0 (unreleased)
 ------------------
 
+- ** BREAKING ** Drop support for Django versions earlier than 2.0
 - Fix bug where request is not properly set on AuthenticationForm (#102)
 - Fix bug where request not passed through on PasswordResetConfirmAndLoginView (#103)
+- Make UserAdmin compatible with Django 2.0
 
 
 1.7.0 (2019-06-26)
