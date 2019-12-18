@@ -32,7 +32,7 @@ class BetterReadOnlyPasswordHashWidget(ReadOnlyPasswordHashWidget):
     A ReadOnlyPasswordHashWidget that has a less intimidating output.
     """
     def render(self, name, value, attrs=None, renderer=None):
-        final_attrs = flatatt(self.build_attrs(attrs))
+        final_attrs = flatatt(self.build_attrs(attrs or {}))
 
         if not value or not is_password_usable(value):
             summary = ugettext("No password set.")

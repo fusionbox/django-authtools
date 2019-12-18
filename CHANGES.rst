@@ -8,6 +8,8 @@ CHANGES
 - Fix bug where request is not properly set on AuthenticationForm (#102)
 - Fix bug where request not passed through on PasswordResetConfirmAndLoginView (#103)
 - Make UserAdmin compatible with Django 2.0
+  - Fixes a bug where the password change link would not format correctly
+  - Fixes a bug where BetterReadOnlyPasswordWidget would not work on a view only permission
 
 
 1.7.0 (2019-06-26)
