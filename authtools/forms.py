@@ -49,6 +49,14 @@ class BetterReadOnlyPasswordHashWidget(ReadOnlyPasswordHashWidget):
                            attrs=final_attrs, summary=summary)
 
 
+class UserChangeForm(DjangoUserChangeForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        password = self.fields.get('password')
+        if password:
+            password.widget = BetterReadOnlyPasswordHashWidget()
+
+
 class UserCreationForm(forms.ModelForm):
     """
     A form for creating new users. Includes all the required
