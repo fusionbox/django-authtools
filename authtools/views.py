@@ -11,7 +11,7 @@ from django.contrib.auth import (
     REDIRECT_FIELD_NAME, login as auth_login
 )
 from django.contrib.auth.views import (
-    SuccessURLAllowedHostsMixin, INTERNAL_RESET_URL_TOKEN,
+    SuccessURLAllowedHostsMixin,
     INTERNAL_RESET_SESSION_TOKEN
 )
 from django.contrib.auth.decorators import login_required
@@ -298,7 +298,7 @@ class PasswordResetConfirmView(AuthDecoratorsMixin, FormView):
     success_url = reverse_lazy('password_reset_complete')
     post_reset_login = False
     post_reset_login_backend = None
-
+    reset_url_token = 'set-password'
     def dispatch(self, *args, **kwargs):
         assert self.kwargs.get('token') is not None
         self.user = self.get_user()
@@ -307,7 +307,7 @@ class PasswordResetConfirmView(AuthDecoratorsMixin, FormView):
         if self.user is not None:
             # Most of this is copied from django
             token = kwargs['token']
-            if token == INTERNAL_RESET_URL_TOKEN:
+            if token == self.reset_url_token:
                 session_token = self.request.session.get(INTERNAL_RESET_SESSION_TOKEN)
                 if self.token_generator.check_token(self.user, session_token):
                     # If the token is valid, display the password reset form.
@@ -320,7 +320,7 @@ class PasswordResetConfirmView(AuthDecoratorsMixin, FormView):
                     # avoids the possibility of leaking the token in the
                     # HTTP Referer header.
                     self.request.session[INTERNAL_RESET_SESSION_TOKEN] = token
-                    redirect_url = self.request.path.replace(token, INTERNAL_RESET_URL_TOKEN)
+                    redirect_url = self.request.path.replace(token, self.reset_url_token)
                     return HttpResponseRedirect(redirect_url)
 
         return super(PasswordResetConfirmView, self).dispatch(*args, **kwargs)
