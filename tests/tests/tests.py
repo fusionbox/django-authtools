@@ -21,7 +21,7 @@ from django.test import TestCase
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
 from django.utils.encoding import force_text
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from django.forms.fields import Field
 from django.conf import settings
 from django.http import HttpRequest

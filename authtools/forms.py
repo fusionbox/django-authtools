@@ -10,7 +10,7 @@ from django.contrib.auth.forms import (
 )
 from django.contrib.auth import get_user_model, password_validation
 from django.contrib.auth.hashers import identify_hasher, UNUSABLE_PASSWORD_PREFIX
-from django.utils.translation import ugettext_lazy as _, ugettext
+from django.utils.translation import gettext as _, ugettext
 from django.utils.html import format_html
 
 User = get_user_model()
