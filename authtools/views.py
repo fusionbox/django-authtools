@@ -11,7 +11,7 @@ from django.contrib.auth import (
     REDIRECT_FIELD_NAME, login as auth_login
 )
 from django.contrib.auth.views import (
-    SuccessURLAllowedHostsMixin, INTERNAL_RESET_URL_TOKEN,
+    SuccessURLAllowedHostsMixin,
     INTERNAL_RESET_SESSION_TOKEN
 )
 from django.contrib.auth.decorators import login_required
