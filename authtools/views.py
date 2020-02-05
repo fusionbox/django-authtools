@@ -307,21 +307,21 @@ class PasswordResetConfirmView(AuthDecoratorsMixin, FormView):
         if self.user is not None:
             # Most of this is copied from django
             token = kwargs['token']
-            if token == INTERNAL_RESET_URL_TOKEN:
+            """if token == INTERNAL_RESET_URL_TOKEN:
                 session_token = self.request.session.get(INTERNAL_RESET_SESSION_TOKEN)
                 if self.token_generator.check_token(self.user, session_token):
                     # If the token is valid, display the password reset form.
                     self.validlink = True
                     return super(PasswordResetConfirmView, self).dispatch(*args, **kwargs)
-            else:
-                if self.token_generator.check_token(self.user, token):
-                    # Store the token in the session and redirect to the
-                    # password reset form at a URL without the token. That
-                    # avoids the possibility of leaking the token in the
-                    # HTTP Referer header.
-                    self.request.session[INTERNAL_RESET_SESSION_TOKEN] = token
-                    redirect_url = self.request.path.replace(token, INTERNAL_RESET_URL_TOKEN)
-                    return HttpResponseRedirect(redirect_url)
+            else:"""
+            if self.token_generator.check_token(self.user, token):
+                # Store the token in the session and redirect to the
+                # password reset form at a URL without the token. That
+                # avoids the possibility of leaking the token in the
+                # HTTP Referer header.
+                self.request.session[INTERNAL_RESET_SESSION_TOKEN] = token
+                redirect_url = self.request.path.replace(token, INTERNAL_RESET_URL_TOKEN)
+                return HttpResponseRedirect(redirect_url)
 
         return super(PasswordResetConfirmView, self).dispatch(*args, **kwargs)
 
