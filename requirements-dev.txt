@@ -3,4 +3,5 @@ coverage
 Sphinx
 zest.releaser[recommended]
 Django>=1.11
+six==1.14.0
 -e .
