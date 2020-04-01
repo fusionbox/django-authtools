@@ -37,14 +37,4 @@ User models
 
         AUTH_USER_MODEL = 'authtools.User'
 
-4.  Add ``authtools.urls`` to your URL patterns:
-
-    .. code-block:: python
-
-        urlpatterns = patterns('',
-            # ...
-            url(r'^accounts/', include('authtools.urls')),
-            # ...
-        )
-
-5.  Enjoy.
+4.  Enjoy.

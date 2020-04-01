@@ -1,5 +1,4 @@
 from django.contrib.auth.backends import ModelBackend
-from django import VERSION as DJANGO_VERSION
 
 
 class CaseInsensitiveUsernameFieldBackendMixin(object):
