@@ -44,6 +44,10 @@ class AbstractEmailUser(AbstractBaseUser, PermissionsMixin):
         abstract = True
         ordering = ['email']
 
+    def clean(self):
+        super().clean()
+        self.email = self.__class__.objects.normalize_email(self.email)
+
     def get_full_name(self):
         return self.email
 
