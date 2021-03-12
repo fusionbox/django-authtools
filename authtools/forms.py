@@ -51,7 +51,7 @@ class BetterReadOnlyPasswordHashWidget(ReadOnlyPasswordHashWidget):
 
 class UserChangeForm(DjangoUserChangeForm):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super(UserChangeForm, self).__init__(*args, **kwargs)
         password = self.fields.get('password')
         if password:
             password.widget = BetterReadOnlyPasswordHashWidget()
