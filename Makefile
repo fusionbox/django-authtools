@@ -1,6 +1,6 @@
 TESTS=tests authtools
 SETTINGS=tests.sqlite_test_settings
-COVERAGE_COMMAND=
+COVERAGE_COMMAND=python -Wd
 
 # We download the tests from Django and then inherit from them. These environment variables are
 # overridden by the tox.ini. If you are adding support for a new version of Django, you can find
@@ -11,8 +11,8 @@ DJANGO_CHECKSUM?=826996c81e1cc773500124d5c19212e4a7681a55ee169fab9085f2b3015a70d
 
 test: test-builtin test-authtools test-customuser
 
-test-builtin: tests/auth_tests
-	cd tests && DJANGO_SETTINGS_MODULE=$(SETTINGS) $(COVERAGE_COMMAND) ./manage.py test --traceback $(TESTS) --verbosity=2
+test-builtin:
+	cd tests && DJANGO_SETTINGS_MODULE=$(SETTINGS) $(COVERAGE_COMMAND) ./manage.py test  --verbosity=2 --traceback $(TESTS)
 
 test-authtools: tests/auth_tests
 	+AUTH_USER_MODEL='authtools.User' make test-builtin
