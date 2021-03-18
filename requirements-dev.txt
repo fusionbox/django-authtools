@@ -2,5 +2,5 @@ tox
 coverage
 Sphinx
 zest.releaser[recommended]
-Django>=1.11
+Django>=2.2
 -e .

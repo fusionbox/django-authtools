@@ -26,7 +26,7 @@ optional password fields::
         """
 
         def __init__(self, *args, **kwargs):
-            super(UserCreationForm, self).__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)
             self.fields['password1'].required = False
             self.fields['password2'].required = False
             # If one field gets autocompleted but not the other, our 'neither
@@ -36,7 +36,7 @@ optional password fields::
 
         def clean_password2(self):
             password1 = self.cleaned_data.get("password1")
-            password2 = super(UserCreationForm, self).clean_password2()
+            password2 = super().clean_password2()
             if bool(password1) ^ bool(password2):
                 raise forms.ValidationError("Fill out both fields")
             return password2
@@ -81,7 +81,7 @@ Then an admin class that uses our form and sends the email::
             else:
                 reset_password = False
 
-            super(UserAdmin, self).save_model(request, obj, form, change)
+            super().save_model(request, obj, form, change)
 
             if reset_password:
                 reset_form = PasswordResetForm({'email': obj.email})

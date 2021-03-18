@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 from django import forms
 from django.forms.utils import flatatt
 from django.contrib.auth.forms import (
@@ -79,7 +77,7 @@ class UserCreationForm(forms.ModelForm):
         fields = (User.USERNAME_FIELD,) + tuple(User.REQUIRED_FIELDS)
 
     def __init__(self, *args, **kwargs):
-        super(UserCreationForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         def validate_uniqueness_of_username_field(value):
             # Since User.username is unique, this check is redundant,
@@ -103,7 +101,7 @@ class UserCreationForm(forms.ModelForm):
         return password2
 
     def _post_clean(self):
-        super(UserCreationForm, self)._post_clean()
+        super()._post_clean()
         # Validate the password after self.instance is updated with form data
         # by super().
         password = self.cleaned_data.get('password2')
@@ -115,7 +113,7 @@ class UserCreationForm(forms.ModelForm):
 
     def save(self, commit=True):
         # Save the provided password in hashed format
-        user = super(UserCreationForm, self).save(commit=False)
+        user = super().save(commit=False)
         user.set_password(self.cleaned_data["password1"])
         if commit:
             user.save()
@@ -174,6 +172,6 @@ class FriendlyPasswordResetForm(OldPasswordResetForm):
 
 class AuthenticationForm(DjangoAuthenticationForm):
     def __init__(self, request=None, *args, **kwargs):
-        super(AuthenticationForm, self).__init__(request, *args, **kwargs)
+        super().__init__(request, *args, **kwargs)
         username_field = User._meta.get_field(User.USERNAME_FIELD)
         self.fields['username'].widget = username_field.formfield().widget

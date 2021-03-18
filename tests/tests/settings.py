@@ -1,8 +1,4 @@
-from __future__ import print_function
-
 import os
-
-from django import VERSION as DJANGO_VERSION
 
 SECRET_KEY = 'w6bidenrf5q%byf-q82b%pli50i0qmweus6gt_3@k$=zg7ymd3'
 SITE_ID = 1
@@ -51,6 +47,7 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],

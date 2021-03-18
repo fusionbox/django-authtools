@@ -1,11 +1,11 @@
 TESTS=tests authtools
 SETTINGS=tests.sqlite_test_settings
-COVERAGE_COMMAND=
+COVERAGE_COMMAND=python -Wd
 
 test: test-builtin test-authtools test-customuser
 
 test-builtin:
-	cd tests && DJANGO_SETTINGS_MODULE=$(SETTINGS) $(COVERAGE_COMMAND) ./manage.py test --traceback $(TESTS) --verbosity=2
+	cd tests && DJANGO_SETTINGS_MODULE=$(SETTINGS) $(COVERAGE_COMMAND) ./manage.py test  --verbosity=2 --traceback $(TESTS)
 
 test-authtools:
 	+AUTH_USER_MODEL='authtools.User' make test-builtin
