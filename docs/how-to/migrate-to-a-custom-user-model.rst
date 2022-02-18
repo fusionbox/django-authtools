@@ -124,7 +124,7 @@ field. Here's how I've done it in the past.
     treats ``email`` as the username. ::
 
         from django.db import models
-        from django.utils.translation import ugettext_lazy as _
+        from django.utils.translation import gettext_lazy as _
 
         from authtools.models import AbstractNamedUser
 

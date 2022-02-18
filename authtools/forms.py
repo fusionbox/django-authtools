@@ -10,7 +10,7 @@ from django.contrib.auth.forms import (
 )
 from django.contrib.auth import get_user_model, password_validation
 from django.contrib.auth.hashers import identify_hasher, UNUSABLE_PASSWORD_PREFIX
-from django.utils.translation import ugettext_lazy as _, ugettext
+from django.utils.translation import gettext_lazy as _, gettext
 from django.utils.html import format_html
 
 User = get_user_model()
@@ -35,15 +35,15 @@ class BetterReadOnlyPasswordHashWidget(ReadOnlyPasswordHashWidget):
         final_attrs = flatatt(self.build_attrs(attrs or {}))
 
         if not value or not is_password_usable(value):
-            summary = ugettext("No password set.")
+            summary = gettext("No password set.")
         else:
             try:
                 identify_hasher(value)
             except ValueError:
-                summary = ugettext("Invalid password format or unknown"
+                summary = gettext("Invalid password format or unknown"
                                    " hashing algorithm.")
             else:
-                summary = ugettext('*************')
+                summary = gettext('*************')
 
         return format_html('<div{attrs}><strong>{summary}</strong></div>',
                            attrs=final_attrs, summary=summary)
