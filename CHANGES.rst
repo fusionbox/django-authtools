@@ -1,15 +1,10 @@
 CHANGES
 =======
 
-2.0.0 (unreleased)
+2.0.0
 ------------------
 
-- ** BREAKING ** Drop support for Django versions earlier than 2.0
-- Fix bug where request is not properly set on AuthenticationForm (#102)
-- Fix bug where request not passed through on PasswordResetConfirmAndLoginView (#103)
-- Make UserAdmin compatible with Django 2.0
-  - Fixes a bug where the password change link would not format correctly
-  - Fixes a bug where BetterReadOnlyPasswordWidget would not work on a view only permission
+- Add support for Django 3.0
 
 
 1.7.0 (2019-06-26)
