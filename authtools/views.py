@@ -27,8 +27,7 @@ from django.contrib.sites.shortcuts import get_current_site
 
 from django.shortcuts import redirect, resolve_url
 from django.utils.functional import lazy
-from django.utils.http import base36_to_int, is_safe_url, urlsafe_base64_decode
-import six
+from django.utils.http import is_safe_url, urlsafe_base64_decode
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
@@ -39,19 +38,7 @@ from .forms import AuthenticationForm
 
 User = get_user_model()
 
-
-def _safe_resolve_url(url):
-    """
-    Previously, resolve_url_lazy would fail if the url was a unicode object.
-    See <https://github.com/fusionbox/django-authtools/issues/13> for more
-    information.
-
-    Thanks to GitHub user alanwj for pointing out the problem and providing
-    this solution.
-    """
-    return six.text_type(resolve_url(url))
-
-resolve_url_lazy = lazy(_safe_resolve_url, six.text_type)
+resolve_url_lazy = lazy(resolve_url, str)
 
 
 class WithCurrentSiteMixin(object):
@@ -144,6 +131,7 @@ SensitivePostParametersMixin = DecoratorMixin(
                               'password2', 'new_password1', 'new_password2')
 )
 
+
 class AuthDecoratorsMixin(NeverCacheMixin, CsrfProtectMixin, SensitivePostParametersMixin):
     pass
 
@@ -195,7 +183,8 @@ class LoginView(AuthDecoratorsMixin, SuccessURLAllowedHostsMixin,
         return kwargs
 
 
-class LogoutView(NeverCacheMixin, SuccessURLAllowedHostsMixin, WithCurrentSiteMixin, WithNextUrlMixin, TemplateView,
+class LogoutView(NeverCacheMixin, SuccessURLAllowedHostsMixin, WithCurrentSiteMixin,
+                 WithNextUrlMixin, TemplateView,
                  RedirectView):
     template_name = 'registration/logged_out.html'
     permanent = False
@@ -207,7 +196,8 @@ class LogoutView(NeverCacheMixin, SuccessURLAllowedHostsMixin, WithCurrentSiteMi
             return redirect_to
         elif settings.LOGOUT_REDIRECT_URL is not None:
             return resolve_url(settings.LOGOUT_REDIRECT_URL)
-        elif self.request.POST.get(self.redirect_field_name, self.request.GET.get(self.redirect_field_name, '')):
+        elif self.request.POST.get(self.redirect_field_name,
+                                   self.request.GET.get(self.redirect_field_name, '')):
             # we have a url, but it is not safe. Django redirects back to the same view.
             return self.request.path
 
