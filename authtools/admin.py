@@ -5,10 +5,11 @@ import copy
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import UserCreationForm
 from django.utils.translation import ugettext_lazy as _
 
+from authtools.forms import UserChangeForm
 from authtools.models import User
-from authtools.forms import UserCreationForm, AdminUserChangeForm
 
 USERNAME_FIELD = get_user_model().USERNAME_FIELD
 
@@ -34,7 +35,7 @@ class StrippedUserAdmin(DjangoUserAdmin):
     # The forms to add and change user instances
     add_form_template = None
     add_form = UserCreationForm
-    form = AdminUserChangeForm
+    form = UserChangeForm
 
     # The fields to be used in displaying the User model.
     # These override the definitions on the base UserAdmin

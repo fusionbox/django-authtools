@@ -32,7 +32,7 @@ class BetterReadOnlyPasswordHashWidget(ReadOnlyPasswordHashWidget):
     A ReadOnlyPasswordHashWidget that has a less intimidating output.
     """
     def render(self, name, value, attrs=None, renderer=None):
-        final_attrs = flatatt(self.build_attrs(attrs))
+        final_attrs = flatatt(self.build_attrs(attrs or {}))
 
         if not value or not is_password_usable(value):
             summary = ugettext("No password set.")
@@ -47,6 +47,14 @@ class BetterReadOnlyPasswordHashWidget(ReadOnlyPasswordHashWidget):
 
         return format_html('<div{attrs}><strong>{summary}</strong></div>',
                            attrs=final_attrs, summary=summary)
+
+
+class UserChangeForm(DjangoUserChangeForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        password = self.fields.get('password')
+        if password:
+            password.widget = BetterReadOnlyPasswordHashWidget()
 
 
 class UserCreationForm(forms.ModelForm):
@@ -136,40 +144,6 @@ setattr(
 
 # alias for the old name for backwards-compatability
 CaseInsensitiveEmailUserCreationForm = CaseInsensitiveUsernameFieldCreationForm
-
-
-class UserChangeForm(forms.ModelForm):
-    """
-    A form for updating users. Includes all the fields on
-    the user, but replaces the password field with admin's
-    password hash display field.
-    """
-    password = ReadOnlyPasswordHashField(label=_("Password"),
-        widget=BetterReadOnlyPasswordHashWidget)
-
-    class Meta:
-        model = User
-        fields = '__all__'
-
-    def __init__(self, *args, **kwargs):
-        super(UserChangeForm, self).__init__(*args, **kwargs)
-        f = self.fields.get('user_permissions', None)
-        if f is not None:
-            f.queryset = f.queryset.select_related('content_type')
-
-    def clean_password(self):
-        # Regardless of what the user provides, return the initial value.
-        # This is done here, rather than on the field, because the
-        # field does not have access to the initial value
-        return self.initial["password"]
-
-
-class AdminUserChangeForm(UserChangeForm):
-    def __init__(self, *args, **kwargs):
-        super(AdminUserChangeForm, self).__init__(*args, **kwargs)
-        if not self.fields['password'].help_text:
-            self.fields['password'].help_text = \
-                DjangoUserChangeForm.base_fields['password'].help_text
 
 
 class FriendlyPasswordResetForm(OldPasswordResetForm):
