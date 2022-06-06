@@ -10,3 +10,4 @@ build/
 /django.tar.gz
 .idea/
 .DS_Store
+packages

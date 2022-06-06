@@ -4,8 +4,7 @@ import os
 
 from setuptools import setup, find_packages
 
-__doc__ = ("Custom user model app for Django featuring email as username and"
-           " class-based views for authentication.")
+__doc__ = "Custom user model app for Django featuring email as username."
 
 
 def read(fname):
@@ -13,13 +12,13 @@ def read(fname):
 
 
 install_requires = [
-    'Django>=1.11',
+    'Django>=2.0',
 ]
 
 setup(
     name='django-authtools',
-    version='1.8.0.dev0',
-    author='Fusionbox, Inc.',
+    version='2.0',
+    author='Fusionbox, Inc., gavinwahl, sensus261',
     author_email='programmers@fusionbox.com',
     description=__doc__,
     long_description='\n\n'.join([read('README.rst'), read('CHANGES.rst')]),
@@ -37,9 +36,9 @@ setup(
         'License :: OSI Approved :: BSD License',
         'Natural Language :: English',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
     ],
 )

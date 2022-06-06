@@ -14,9 +14,9 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+    'django.contrib.messages',
     'tests',
     'authtools',
-    'auth_tests',
 )
 
 MIDDLEWARE = [
@@ -27,21 +27,12 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
 ]
 
-if DJANGO_VERSION < (1, 10):
-    MIDDLEWARE_CLASSES = MIDDLEWARE + [
-        'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
-    ]
-
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': 'sqlite_database',
     }
-}
-
-MIGRATION_MODULES = {
-    'auth': None,
 }
 
 ROOT_URLCONF = 'tests.urls'
@@ -61,6 +52,7 @@ TEMPLATES = [
         'OPTIONS': {
             'context_processors': [
                 'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
             ],
         },
     },

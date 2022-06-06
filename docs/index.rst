@@ -3,13 +3,12 @@ django-authtools
 
 A custom user model app for Django 1.5+. It tries to stay true to the built-in
 User model for the most part.  The main differences between authtools and
-django.contrib.auth are a User model with email as username and classed-based
-auth views.
+django.contrib.auth are a User model with email as username.
 
-It provides its own custom User model, views, urls, ModelAdmin, and Forms. The
-Admin classes, views, and forms, however, are all User model agnostic, so they
-will work with any User model.  django-authtools also provides base classes that
-make creating your own custom User model easier.
+It provides its own custom User model, ModelAdmin, and Forms. The Admin classes
+and forms, however, are all User model agnostic, so they will work with any
+User model.  django-authtools also provides base classes that make creating
+your own custom User model easier.
 
 Contents:
 
@@ -19,7 +18,6 @@ Contents:
     intro
     admin
     forms
-    views
     backends
     how-to/index
     talks
