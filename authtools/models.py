@@ -16,7 +16,7 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, **kwargs):
-        return self.create_user(is_staff=True, is_email=True, **kwargs)
+        return self.create_user(is_staff=True, is_superuser=True, **kwargs)
 
     def get_by_natural_key(self, email):
         normalized_email = self.normalize_email(email)
