@@ -85,6 +85,24 @@ class UserCreationFormTest(TestCase):
         self.assertEqual(form['password1'].errors, required_error)
         self.assertEqual(form['password2'].errors, [])
 
+    def test_normalizes_email(self):
+        data = {
+            'password1': 'test123',
+            'password2': 'test123',
+            self.username: 'test@Example.com',
+        }
+        if settings.AUTH_USER_MODEL == 'auth.User':
+            data['email'] = 'test@Example.com'
+        elif settings.AUTH_USER_MODEL == 'authtools.User':
+            data['name'] = 'John Smith'
+        elif settings.AUTH_USER_MODEL != 'tests.User':
+            assert False, "I don't know your user model"
+
+        form = UserCreationForm(data)
+        self.assertTrue(form.is_valid())
+        u = form.save()
+        self.assertEqual(u.email, 'test@example.com')
+
     def test_success(self):
         # The success case.
         data = {
@@ -115,6 +133,24 @@ class UserCreationFormTest(TestCase):
 
         form = UserCreationForm()
         self.assertSequenceEqual(list(form.fields.keys()), fields)
+
+    def test_uses_auth_password_validators(self):
+        with self.settings(
+            AUTH_PASSWORD_VALIDATORS=[
+                {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'}
+            ]
+        ):
+            data = {
+                self.username: 'jsmith@example.com',
+                'password1': 'a',
+                'password2': 'a',
+            }
+
+            if settings.AUTH_USER_MODEL == 'authtools.User':
+                data['name'] = 'John Smith'
+
+            form = UserCreationForm(data)
+            self.assertFalse(form.is_valid())
 
 
 @skipIfCustomUser
@@ -326,3 +362,32 @@ class CaseInsensitiveTest(TestCase):
 class CaseInsensitiveAliasTest(TestCase):
     """Test that the aliases still work as well"""
     form_class = CaseInsensitiveEmailUserCreationForm
+
+
+@skipIfNotCustomUser
+class NormalizeEmailTestCase(TestCase):
+    def setUp(self):
+        self.password = 'secret'
+        self.user = User.objects.create_user(
+            email='test@Foo.com',
+            password=self.password,
+        )
+
+    def test_create_user_normalizes_email(self):
+        self.assertEqual(self.user.email, 'test@foo.com')
+
+    def test_login_email_domain_is_case_insensitive(self):
+        self.assertTrue(self.client.login(
+            username='test@foo.com',
+            password=self.password,
+        ))
+        self.assertTrue(self.client.login(
+            username='test@Foo.com',
+            password=self.password,
+        ))
+
+    def test_login_email_local_part_is_case_sensitive(self):
+        self.assertFalse(self.client.login(
+            username='Test@foo.com',
+            password=self.password,
+        ))

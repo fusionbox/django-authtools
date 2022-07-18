@@ -16,11 +16,11 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, **kwargs):
-        user = self.create_user(**kwargs)
-        user.is_superuser = True
-        user.is_staff = True
-        user.save(using=self._db)
-        return user
+        return self.create_user(is_staff=True, is_email=True, **kwargs)
+
+    def get_by_natural_key(self, email):
+        normalized_email = self.normalize_email(email)
+        return self.get(**{self.model.USERNAME_FIELD: normalized_email})
 
 
 class AbstractEmailUser(AbstractBaseUser, PermissionsMixin):
@@ -42,6 +42,10 @@ class AbstractEmailUser(AbstractBaseUser, PermissionsMixin):
     class Meta:
         abstract = True
         ordering = ['email']
+
+    def clean(self):
+        super().clean()
+        self.email = self.__class__.objects.normalize_email(self.email)
 
     def get_full_name(self):
         return self.email
