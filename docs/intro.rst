@@ -32,22 +32,13 @@ If you want to use the User model provided by authtools (a sensible choice), the
 
         AUTH_USER_MODEL = 'authtools.User'
 
-3.  Add ``authtools.urls`` to your URL patterns::
-
-        urlpatterns = patterns('',
-            # ...
-            url(r'^accounts/', include('authtools.urls')),
-            # ...
-        )
-
 This will set you up with a custom user that
 
 -  uses email as username
 -  has one ``name`` field instead of ``first_name``, ``last_name`` (see `Falsehoods Programmers Believe About Names <http://www.kalzumeus.com/2010/06/17/falsehoods-programmers-believe-about-names/>`_)
 
 It also gives you a registered admin class that has a less intimidating
-:class:`ReadOnlyPasswordHashWidget <authtools.forms.BetterReadOnlyPasswordHashWidget>`
-and the standard auth views (see :doc:`views`).
+:class:`ReadOnlyPasswordHashWidget <authtools.forms.BetterReadOnlyPasswordHashWidget>`.
 
 
 But it's supposed to be a *custom* User model!
@@ -109,3 +100,13 @@ fields instead of just ``name``, you could do this::
 
         def get_short_name(self):
             return self.preferred_name
+
+Caveats
+-------
+
+There are a couple of limitations to using the User model provided by authtools.
+
+The :class:`~authtools.models.User` provided by authtools specifies an email of ``max_length=255``. This works fine for PostgreSQL, but may cause issues with some other databases (MYSQL, MariaDB) where unique indexes can only be created with 191 characters. For this reason, Django's ``User`` model has a ``username`` field of ``max_length=150``. If you use one of these databases, you may want to subclass :class:`~authtools.models.AbstractEmailUser` or :class:`~authtools.models.AbstractNamedUser` and set the ``username`` field to ``max_length=191``. See the `Django docs <https://docs.djangoproject.com/en/4.0/ref/contrib/auth/#django.contrib.auth.models.User.username>`_ for more about this issue.
+
+
+Authtools specifies ``DEFAULT_AUTO_FIELD='django.db.models.AutoField'`` to prevent new migrations in existing projects when upgrading to Django >= 3.2. If you want to use ``django.db.models.BigAutoField``, you should subclass :class:`~authtools.models.AbstractEmailUser` or :class:`~authtools.models.AbstractNamedUser`. See the `Django 3.2 release notes <https://docs.djangoproject.com/en/4.0/releases/3.2/#customizing-type-of-auto-created-primary-keys>`_ for more information.
