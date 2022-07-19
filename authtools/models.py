@@ -16,7 +16,15 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, **kwargs):
-        return self.create_user(is_staff=True, is_superuser=True, **kwargs)
+        kwargs.setdefault('is_staff', True)
+        kwargs.setdefault('is_superuser', True)
+
+        if kwargs.get('is_staff') is not True:
+            raise ValueError('Superuser must have is_staff=True.')
+        if kwargs.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
+
+        return self.create_user(**kwargs)
 
     def get_by_natural_key(self, email):
         normalized_email = self.normalize_email(email)
