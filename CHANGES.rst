@@ -14,6 +14,7 @@ support for Django 1.11 and Python 2.
   - Fixes a bug where BetterReadOnlyPasswordWidget would not work on a view only permission
 - Migrate from TravisCI to GitHub Actions
 
+
 1.7.0 (2019-06-26)
 ------------------
 
