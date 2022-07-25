@@ -1,8 +1,10 @@
 django-authtools
 ================
 
-.. image:: https://travis-ci.org/fusionbox/django-authtools.png
-   :target: http://travis-ci.org/fusionbox/django-authtools
+|Build status|
+
+.. |Build status| image:: https://github.com/fusionbox/django-authtools/actions/workflows/ci.yml/badge.svg
+   :target: https://github.com/fusionbox/django-authtools/actions/workflows/ci.yml
    :alt: Build Status
 
 
