@@ -49,6 +49,9 @@ model. ::
 
     AUTH_USER_MODEL = 'accounts.User'
 
+If your code has any references to Django's ``User`` model, you will have to go through and replace them with `generic references <https://docs.djangoproject.com/en/4.0/topics/auth/customizing/#referencing-the-user-model>`_. In most places, this means using ``get_user_model()`` instead of ``User``.
+For models with a database relationship to ``User``, you should use ``settings.AUTH_USER_MODEL``.
+
 
 Step 3: Seize control
 ---------------------
@@ -117,8 +120,16 @@ field. Here's how I've done it in the past.
 
     $ pip install django-authtools
 
+2. Add ``authtools`` to your ``INSTALLED_APPS``. ::
 
-2.  Add the fields that I want to User. In this case, all I want to add is
+    INSTALLED_APPS = (
+        ...
+        'authtools',
+        ...
+    )
+
+
+3.  Add the fields that I want to User. In this case, all I want to add is
     ``name``. ``email`` already exists on User, but I do need to make it
     unique if I'm going to treat it as a username.
 
@@ -145,12 +156,12 @@ field. Here's how I've done it in the past.
     that data, I will get rid of those fields in step 5.
 
 
-3.  Make a migration to add those fields. ::
+4.  Make a migration to add those fields. ::
 
         $ python manage.py makemigrations accounts
 
 
-4.  Add python functions to run with the migration that consolidate ``first_name``/``last_name`` into ``name`` (and vice-versa when rolling-back). ::
+5.  Add python functions to run with the migration that consolidate ``first_name``/``last_name`` into ``name`` (and vice-versa when rolling-back). ::
 
         def forwards(apps, schema_editor):
             User = apps.get_model('accounts', 'User')
@@ -176,7 +187,7 @@ field. Here's how I've done it in the past.
     that assumes people have two names.
 
 
-5.  Delete the columns you don't want on your User model. For me, that's
+6.  Delete the columns you don't want on your User model. For me, that's
     ``username``, ``first_name``, and ``last_name``. My User model now looks
     like this::
 
@@ -185,16 +196,16 @@ field. Here's how I've done it in the past.
                 db_table = 'auth_user'
 
 
-6.  Generate a migration that deletes those extra fields. ::
+7.  Generate a migration that deletes those extra fields. ::
 
         $ python manage.py makemigrations accounts
 
-7.  Run the migrations. ::
+8.  Run the migrations. ::
 
         $ python manage.py migrate accounts
 
 
-8.  Watch `YouTube <http://www.youtube.com/watch?v=9bZkp7q19f0>`_. You are
+9.  Watch `YouTube <http://www.youtube.com/watch?v=9bZkp7q19f0>`_. You are
     done.
 
 .. _this blog post by Tobias McNulty: https://www.caktusgroup.com/blog/2019/04/26/how-switch-custom-django-user-model-mid-project/
