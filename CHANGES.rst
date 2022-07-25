@@ -18,6 +18,7 @@ support for Django 1.11 and Python 2.
   - Silences warning and prevents new migrations when using authtools with Django >= 3.2
 - Normalize email in User clean method and UserManager get_by_natural_key method (weslord #112)
   - Fixes a bug where email would not be normalized when creating a user in the admin
+- Migrate from TravisCI to GitHub Actions
 
 
 1.7.0 (2019-06-26)
