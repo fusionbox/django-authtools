@@ -1,9 +1,5 @@
 name: Build
-on:
-  push:
-    branches: ["github-ci"]
-  pull_request:
-    branches: ["master"]
+on: [push, pull_request]
 
 jobs:
   build:
