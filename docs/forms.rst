@@ -35,8 +35,7 @@ User model that follows the :class:`User class contract <django:django.contrib.a
 
     .. warning::
 
-        This form leaks user email addresses. Please refer to the view
-        :func:`~authtools.views.friendly_password_reset`.
+        This form leaks user email addresses.
 
 It also provides a Widget class.
 
