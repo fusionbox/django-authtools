@@ -3,13 +3,22 @@ CHANGES
 
 2.0.0 (unreleased)
 ------------------
+** BREAKING **
 
-- ** BREAKING ** Drop support for Django versions earlier than 2.0
+Remove views and URLs. You can now use the ones built in to Django. Removes
+support for Django 1.11 and Python 2.
+
+- Add support for Django 2.2, 3.0, 3.1, 3.2, and 4.0.
 - Fix bug where request is not properly set on AuthenticationForm (#102)
-- Fix bug where request not passed through on PasswordResetConfirmAndLoginView (#103)
 - Make UserAdmin compatible with Django 2.0
   - Fixes a bug where the password change link would not format correctly
   - Fixes a bug where BetterReadOnlyPasswordWidget would not work on a view only permission
+- Documentation fixes (#87, #117)
+- Set DEFAULT_AUTO_FIELD to AutoField in AuthtoolsConfig (#123)
+  - Silences warning and prevents new migrations when using authtools with Django >= 3.2
+- Normalize email in User clean method and UserManager get_by_natural_key method (weslord #112)
+  - Fixes a bug where email would not be normalized when creating a user in the admin
+- Migrate from TravisCI to GitHub Actions
 
 
 1.7.0 (2019-06-26)

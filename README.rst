@@ -1,17 +1,16 @@
 django-authtools
 ================
 
-.. image:: https://travis-ci.org/fusionbox/django-authtools.png
-   :target: http://travis-ci.org/fusionbox/django-authtools
+|Build status|
+
+.. |Build status| image:: https://github.com/fusionbox/django-authtools/actions/workflows/ci.yml/badge.svg
+   :target: https://github.com/fusionbox/django-authtools/actions/workflows/ci.yml
    :alt: Build Status
 
 
-A custom user model app for Django 1.11+ that features email as username and
+A custom user model app for Django 2.2+ that features email as username and
 other things. It tries to stay true to the built-in user model for the most
 part.
-
-The main differences between authtools's User and django.contrib.auth's are
-email as username and class-based auth views.
 
 Read the `django-authtools documentation
 <https://django-authtools.readthedocs.org/en/latest/>`_.
@@ -37,14 +36,4 @@ User models
 
         AUTH_USER_MODEL = 'authtools.User'
 
-4.  Add ``authtools.urls`` to your URL patterns:
-
-    .. code-block:: python
-
-        urlpatterns = patterns('',
-            # ...
-            url(r'^accounts/', include('authtools.urls')),
-            # ...
-        )
-
-5.  Enjoy.
+4.  Enjoy.

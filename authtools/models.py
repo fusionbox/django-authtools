@@ -4,8 +4,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.core.mail import send_mail
 from django.db import models
 from django.utils import timezone
-from django.utils.encoding import python_2_unicode_compatible
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 
 class UserManager(BaseUserManager):
@@ -17,11 +16,19 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, **kwargs):
-        user = self.create_user(**kwargs)
-        user.is_superuser = True
-        user.is_staff = True
-        user.save(using=self._db)
-        return user
+        kwargs.setdefault('is_staff', True)
+        kwargs.setdefault('is_superuser', True)
+
+        if kwargs.get('is_staff') is not True:
+            raise ValueError('Superuser must have is_staff=True.')
+        if kwargs.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
+
+        return self.create_user(**kwargs)
+
+    def get_by_natural_key(self, email):
+        normalized_email = self.normalize_email(email)
+        return self.get(**{self.model.USERNAME_FIELD: normalized_email})
 
 
 class AbstractEmailUser(AbstractBaseUser, PermissionsMixin):
@@ -44,6 +51,10 @@ class AbstractEmailUser(AbstractBaseUser, PermissionsMixin):
         abstract = True
         ordering = ['email']
 
+    def clean(self):
+        super().clean()
+        self.email = self.__class__.objects.normalize_email(self.email)
+
     def get_full_name(self):
         return self.email
 
@@ -55,7 +66,6 @@ class AbstractEmailUser(AbstractBaseUser, PermissionsMixin):
 
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
-@python_2_unicode_compatible
 class AbstractNamedUser(AbstractEmailUser):
     name = models.CharField(_('name'), max_length=255)
 
