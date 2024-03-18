@@ -58,9 +58,7 @@ TEMPLATES = [
     },
 ]
 
-# sha1 hasher was removed as a default in django 1.10. Need it for the tests.
 PASSWORD_HASHERS = [
-    'django.contrib.auth.hashers.SHA1PasswordHasher',
     'django.contrib.auth.hashers.PBKDF2PasswordHasher',
     'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
     'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
