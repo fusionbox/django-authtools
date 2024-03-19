@@ -1,7 +1,7 @@
 django-authtools
 ================
 
-A custom user model app for Django 1.5+. It tries to stay true to the built-in
+A custom user model app for Django 2.2+. It tries to stay true to the built-in
 User model for the most part.  The main differences between authtools and
 django.contrib.auth are a User model with email as username.
 

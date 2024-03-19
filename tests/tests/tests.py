@@ -154,12 +154,12 @@ class UserCreationFormTest(TestCase):
 
 
 @skipIfCustomUser
-@override_settings(USE_TZ=False, PASSWORD_HASHERS=('django.contrib.auth.hashers.SHA1PasswordHasher',))
+@override_settings(USE_TZ=False)
 class UserChangeFormTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.u1 = User.objects.create(
-            password='sha1$6efc0$f93efe9fd7542f25a7be94871ea45aa95de57161',
+            password='pbkdf2_sha256$600000$U3$rhq9d758wGq/JU5/+bkG8OqDVY05d04zKD4cuamR+Sk=',
             last_login=datetime.datetime(2006, 12, 17, 7, 3, 31), is_superuser=False, username='testclient',
             first_name='Test', last_name='Client', email='testclient@example.com', is_staff=False, is_active=True,
             date_joined=datetime.datetime(2006, 12, 17, 7, 3, 31)
@@ -242,7 +242,7 @@ class UserChangeFormTest(TestCase):
         form = UserChangeForm(instance=user, data=post_data)
 
         self.assertTrue(form.is_valid())
-        self.assertEqual(form.cleaned_data['password'], 'sha1$6efc0$f93efe9fd7542f25a7be94871ea45aa95de57161')
+        self.assertEqual(form.cleaned_data['password'], 'pbkdf2_sha256$600000$U3$rhq9d758wGq/JU5/+bkG8OqDVY05d04zKD4cuamR+Sk=')
 
     def test_bug_19349_bound_password_field(self):
         user = User.objects.get(username='testclient')
