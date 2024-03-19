@@ -1,7 +1,7 @@
 CHANGES
 =======
 
-2.0.1 (unreleased)
+2.0.1 (2024-03-19)
 ------------------
 
 - Resolve `SHA1PasswordHasher` deprecation warning for Django 4.0 and above
