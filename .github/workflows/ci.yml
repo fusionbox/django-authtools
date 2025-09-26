@@ -10,15 +10,11 @@ jobs:
         include:
           # Django 2.2
           - django-version: "2.2"
-            python-version: "3.7"
-          - django-version: "2.2"
             python-version: "3.8"
           - django-version: "2.2"
             python-version: "3.9"
 
           # Django 3.0
-          - django-version: "3.0"
-            python-version: "3.7"
           - django-version: "3.0"
             python-version: "3.8"
           - django-version: "3.0"
@@ -26,15 +22,11 @@ jobs:
 
           # Django 3.1
           - django-version: "3.1"
-            python-version: "3.7"
-          - django-version: "3.1"
             python-version: "3.8"
           - django-version: "3.1"
             python-version: "3.9"
 
           # Django 3.2
-          - django-version: "3.2"
-            python-version: "3.7"
           - django-version: "3.2"
             python-version: "3.8"
           - django-version: "3.2"
@@ -75,6 +67,26 @@ jobs:
             python-version: "3.11"
           - django-version: "5.0"
             python-version: "3.12"
+
+          # Django 5.1
+          - django-version: "5.1"
+            python-version: "3.10"
+          - django-version: "5.1"
+            python-version: "3.11"
+          - django-version: "5.1"
+            python-version: "3.12"
+          - django-version: "5.1"
+            python-version: "3.13"
+
+          # Django 5.2
+          - django-version: "5.2"
+            python-version: "3.10"
+          - django-version: "5.2"
+            python-version: "3.11"
+          - django-version: "5.2"
+            python-version: "3.12"
+          - django-version: "5.2"
+            python-version: "3.13"
 
     steps:
     - uses: actions/checkout@v4
