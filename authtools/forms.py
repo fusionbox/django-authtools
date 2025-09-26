@@ -35,7 +35,7 @@ class BetterReadOnlyPasswordHashWidget(ReadOnlyPasswordHashWidget):
     def get_context(self, name, value, attrs):
         context = super().get_context(name, value, attrs)
         if any(item.get('value') for item in context['summary']):
-            context['summary'] = [{'label': '*************'}]
+            context['summary'] = [{'label': gettext('*************')}]
         return context
 
 
