@@ -31,22 +31,12 @@ class BetterReadOnlyPasswordHashWidget(ReadOnlyPasswordHashWidget):
     """
     A ReadOnlyPasswordHashWidget that has a less intimidating output.
     """
-    def render(self, name, value, attrs=None, renderer=None):
-        final_attrs = flatatt(self.build_attrs(attrs or {}))
 
-        if not value or not is_password_usable(value):
-            summary = gettext("No password set.")
-        else:
-            try:
-                identify_hasher(value)
-            except ValueError:
-                summary = gettext("Invalid password format or unknown"
-                                   " hashing algorithm.")
-            else:
-                summary = gettext('*************')
-
-        return format_html('<div{attrs}><strong>{summary}</strong></div>',
-                           attrs=final_attrs, summary=summary)
+    def get_context(self, name, value, attrs):
+        context = super().get_context(name, value, attrs)
+        if any(item.get('value') for item in context['summary']):
+            context['summary'] = [{'label': '*************'}]
+        return context
 
 
 class UserChangeForm(DjangoUserChangeForm):
