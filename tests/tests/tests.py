@@ -2,6 +2,7 @@ import datetime
 
 from unittest import skipIf, skipUnless
 
+import django
 from django.core import mail
 
 from django.test import TestCase
@@ -257,6 +258,15 @@ class UserChangeFormTest(TestCase):
         form = UserChangeForm(instance=user)
 
         self.assertIn(_('*************'), form.as_table())
+
+        version = django.VERSION[0]
+
+        if version < 4:
+            self.assertIn('<a href="../password/">', form.as_table())
+        elif version < 5:
+            self.assertIn('<a href="../../{0}/password/">'.format(user.id), form.as_table())
+        else:
+            self.assertIn('<a class="button" href="../password/">', form.as_table())
 
 
 class UserAdminTest(TestCase):
