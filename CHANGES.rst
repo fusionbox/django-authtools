@@ -1,7 +1,7 @@
 CHANGES
 =======
 
-2.0.2 (unreleased)
+2.0.2 (2025-09-29)
 ------------------
 
 - Support the change in Django 5.0+ to a password change button on user edit pages in the Django admin (Jeff Bradberry #129)
