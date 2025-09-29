@@ -4,7 +4,10 @@ CHANGES
 2.0.2 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Support the change in Django 5.0+ to a password change button on user edit pages in the Django admin (Jeff Bradberry #129)
+- Add test coverage for Django 5.1, 5.2
+- Add test coverage for Python 3.13
+- Python 3.7 is no longer availble in GitHub runner using ubuntu-latest
 
 
 2.0.1 (2024-03-19)
