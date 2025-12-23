@@ -31,12 +31,7 @@ class BetterReadOnlyPasswordHashWidget(ReadOnlyPasswordHashWidget):
     """
     A ReadOnlyPasswordHashWidget that has a less intimidating output.
     """
-
-    def get_context(self, name, value, attrs):
-        context = super().get_context(name, value, attrs)
-        if any(item.get('value') for item in context['summary']):
-            context['summary'] = [{'label': gettext('*************')}]
-        return context
+    template_name = 'authtools/widgets/better_read_only_password_hash.html'
 
 
 class UserChangeForm(DjangoUserChangeForm):
