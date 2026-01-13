@@ -258,7 +258,7 @@ class UserChangeFormTest(TestCase):
         form = UserChangeForm(instance=user)
 
         self.assertIn(_('*************'), form.as_table())
-        self.assertIn('<a href="../password/">', form.as_table())
+        self.assertIn('<a href="../password/"', form.as_table())
 
 
 class UserAdminTest(TestCase):

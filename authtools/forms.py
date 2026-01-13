@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-from django import forms
+from django import forms, VERSION
 from django.contrib.auth.forms import (
     ReadOnlyPasswordHashWidget,
     PasswordResetForm as OldPasswordResetForm,
@@ -30,6 +30,12 @@ class BetterReadOnlyPasswordHashWidget(ReadOnlyPasswordHashWidget):
     A ReadOnlyPasswordHashWidget that has a less intimidating output.
     """
     template_name = 'authtools/widgets/better_read_only_password_hash.html'
+
+    def get_context(self, name, value, attrs):
+        context = super().get_context(name, value, attrs)
+        version = float(f'{VERSION[0]}.{VERSION[1]}')
+        context['is_button'] = version >= 5.1
+        return context
 
 
 class UserChangeForm(DjangoUserChangeForm):
