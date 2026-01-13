@@ -1,17 +1,15 @@
 from __future__ import unicode_literals
 
 from django import forms
-from django.forms.utils import flatatt
 from django.contrib.auth.forms import (
-    ReadOnlyPasswordHashField, ReadOnlyPasswordHashWidget,
+    ReadOnlyPasswordHashWidget,
     PasswordResetForm as OldPasswordResetForm,
     UserChangeForm as DjangoUserChangeForm,
     AuthenticationForm as DjangoAuthenticationForm,
 )
 from django.contrib.auth import get_user_model, password_validation
-from django.contrib.auth.hashers import identify_hasher, UNUSABLE_PASSWORD_PREFIX
-from django.utils.translation import gettext_lazy as _, gettext
-from django.utils.html import format_html
+from django.contrib.auth.hashers import UNUSABLE_PASSWORD_PREFIX
+from django.utils.translation import gettext_lazy as _
 
 User = get_user_model()
 
