@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-from django import forms, VERSION
+from django import forms
 from django.contrib.auth.forms import (
     ReadOnlyPasswordHashWidget,
     PasswordResetForm as OldPasswordResetForm,
@@ -8,21 +8,9 @@ from django.contrib.auth.forms import (
     AuthenticationForm as DjangoAuthenticationForm,
 )
 from django.contrib.auth import get_user_model, password_validation
-from django.contrib.auth.hashers import UNUSABLE_PASSWORD_PREFIX
 from django.utils.translation import gettext_lazy as _
 
 User = get_user_model()
-
-
-def is_password_usable(pw):
-    """Decide whether a password is usable only by the unusable password prefix.
-
-    We can't use django.contrib.auth.hashers.is_password_usable either, because
-    it not only checks against the unusable password, but checks for a valid
-    hasher too. We need different error messages in those cases.
-    """
-
-    return not pw.startswith(UNUSABLE_PASSWORD_PREFIX)
 
 
 class BetterReadOnlyPasswordHashWidget(ReadOnlyPasswordHashWidget):
