@@ -33,8 +33,7 @@ class BetterReadOnlyPasswordHashWidget(ReadOnlyPasswordHashWidget):
 
     def get_context(self, name, value, attrs):
         context = super().get_context(name, value, attrs)
-        version = float(f'{VERSION[0]}.{VERSION[1]}')
-        context['is_button'] = version >= 5.1
+        context['is_button'] = VERSION[:2] >= (5, 1)
         return context
 
 
