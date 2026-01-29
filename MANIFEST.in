@@ -2,6 +2,7 @@ include README.rst CHANGES.rst CONTRIBUTING.rst RELEASES.rst LICENSE Makefile
 include requirements-dev.txt
 include tox.ini
 include .readthedocs.yaml
+recursive-include authtools/templates *
 recursive-include tests *.py
 recursive-include tests *.json
 recursive-include docs *
