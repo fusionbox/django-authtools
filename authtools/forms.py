@@ -31,11 +31,6 @@ class BetterReadOnlyPasswordHashWidget(ReadOnlyPasswordHashWidget):
     """
     template_name = 'authtools/widgets/better_read_only_password_hash.html'
 
-    def get_context(self, name, value, attrs):
-        context = super().get_context(name, value, attrs)
-        context['is_button'] = VERSION[:2] >= (5, 1)
-        return context
-
 
 class UserChangeForm(DjangoUserChangeForm):
     def __init__(self, *args, **kwargs):
