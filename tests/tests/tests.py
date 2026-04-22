@@ -257,16 +257,16 @@ class UserChangeFormTest(TestCase):
         user = User.objects.get(username='testclient')
         form = UserChangeForm(instance=user)
 
-        self.assertIn(_('*************'), form.as_table())
+        html = form.as_table()
+        self.assertIn(_('*************'), html)
+        version = django.VERSION[:2]
 
-        version = django.VERSION[0]
-
-        if version < 4:
-            self.assertIn('<a href="../password/">', form.as_table())
-        elif version < 5:
-            self.assertIn('<a href="../../{0}/password/">'.format(user.id), form.as_table())
+        if version < (4, 2):
+            self.assertIn('<a href="../password/"', html)
+        elif version < (5, 1):
+            self.assertIn('<a href="../../{0}/password/">'.format(user.id), html)
         else:
-            self.assertIn('<a class="button" href="../password/">', form.as_table())
+            self.assertIn('<a href="../password/" class="button"', html)
 
 
 class UserAdminTest(TestCase):

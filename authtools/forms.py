@@ -1,42 +1,23 @@
 from __future__ import unicode_literals
 
 from django import forms
-from django.forms.utils import flatatt
 from django.contrib.auth.forms import (
-    ReadOnlyPasswordHashField, ReadOnlyPasswordHashWidget,
+    ReadOnlyPasswordHashWidget,
     PasswordResetForm as OldPasswordResetForm,
     UserChangeForm as DjangoUserChangeForm,
     AuthenticationForm as DjangoAuthenticationForm,
 )
 from django.contrib.auth import get_user_model, password_validation
-from django.contrib.auth.hashers import identify_hasher, UNUSABLE_PASSWORD_PREFIX
-from django.utils.translation import gettext_lazy as _, gettext
-from django.utils.html import format_html
+from django.utils.translation import gettext_lazy as _
 
 User = get_user_model()
-
-
-def is_password_usable(pw):
-    """Decide whether a password is usable only by the unusable password prefix.
-
-    We can't use django.contrib.auth.hashers.is_password_usable either, because
-    it not only checks against the unusable password, but checks for a valid
-    hasher too. We need different error messages in those cases.
-    """
-
-    return not pw.startswith(UNUSABLE_PASSWORD_PREFIX)
 
 
 class BetterReadOnlyPasswordHashWidget(ReadOnlyPasswordHashWidget):
     """
     A ReadOnlyPasswordHashWidget that has a less intimidating output.
     """
-
-    def get_context(self, name, value, attrs):
-        context = super().get_context(name, value, attrs)
-        if any(item.get('value') for item in context['summary']):
-            context['summary'] = [{'label': gettext('*************')}]
-        return context
+    template_name = 'authtools/widgets/better_read_only_password_hash.html'
 
 
 class UserChangeForm(DjangoUserChangeForm):
