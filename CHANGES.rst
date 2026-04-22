@@ -1,7 +1,7 @@
 CHANGES
 =======
 
-2.1.0 (unreleased)
+2.1.0 (2026-04-22)
 ------------------
 
 - Add support for Django 6.0 (#131)
