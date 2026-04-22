@@ -1,10 +1,16 @@
 CHANGES
 =======
 
-2.0.3 (unreleased)
+2.1.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Add support for Django 6.0 (#131)
+- Add test coverage for Python 3.14
+- Rewrite ``BetterReadOnlyPasswordHashWidget`` to render from its own template
+  (``authtools/templates/authtools/widgets/better_read_only_password_hash.html``)
+  for compatibility with Django 6.0.
+- **Backwards Incompatible:** Remove ``authtools.forms.is_password_usable``
+- Update tox.ini for tox 4
 
 
 2.0.2 (2025-09-29)
