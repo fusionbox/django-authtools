@@ -4,7 +4,9 @@ CHANGES
 2.1.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- ``UserManager.create_superuser()`` now accepts ``email`` and ``password``
+  positionally, like ``create_user()`` and Django's documented signature for
+  custom user managers. Keyword calls are unchanged. (#111)
 
 
 2.1.0 (2026-04-22)
