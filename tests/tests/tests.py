@@ -307,6 +307,31 @@ class UserManagerTest(TestCase):
         self.assertTrue(u.is_staff)
         self.assertTrue(u.is_superuser)
 
+    @skipIfNotCustomUser
+    def test_create_superuser_positional_args(self):
+        # Django documents create_superuser() as taking the USERNAME_FIELD and
+        # password positionally, matching create_user().
+        u = User._default_manager.create_superuser('newuser@example.com', 'test123')
+
+        self.assertEqual(u.email, 'newuser@example.com')
+        self.assertTrue(u.check_password('test123'))
+        self.assertTrue(u.is_staff)
+        self.assertTrue(u.is_superuser)
+
+    @skipIfNotCustomUser
+    def test_create_superuser_email_positional_password_keyword(self):
+        u = User._default_manager.create_superuser('newuser@example.com', password='test123')
+
+        self.assertTrue(u.check_password('test123'))
+        self.assertTrue(u.is_superuser)
+
+    @skipIfNotCustomUser
+    def test_create_superuser_requires_superuser_flags(self):
+        with self.assertRaises(ValueError):
+            User._default_manager.create_superuser('newuser@example.com', 'test123', is_staff=False)
+        with self.assertRaises(ValueError):
+            User._default_manager.create_superuser('newuser@example.com', 'test123', is_superuser=False)
+
 
 class UserModelTest(TestCase):
     @skipUnless(settings.AUTH_USER_MODEL == 'authtools.User',
